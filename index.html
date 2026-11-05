@@ -842,13 +842,13 @@ function showStep(i) {
   closeSheet('reviewSheet'); closeSheet('receiptSheet'); $('#banner').classList.remove('show');
   st.setup(); save();
   clearSpot();
-  requestAnimationFrame(() => {
+  (() => {
     const el = $(st.spot); if (!el) return;
     el.classList.add('spot');
     if (innerWidth <= 900) window.scrollTo({ top: $('#phoneWrap').getBoundingClientRect().top + window.scrollY - 8, behavior: reduced ? 'auto' : 'smooth' });
     const sc = st.sheet ? el.closest('.sb') : $('#scroll');
     if (sc) { const d = el.getBoundingClientRect().top - sc.getBoundingClientRect().top; sc.scrollTop += d - (st.sheet ? 20 : (innerWidth <= 460 ? 60 : 90)); }
-  });
+  })();
   if (forward && st.confetti) setTimeout(confetti, 300);
   $('#tourBar').innerHTML = TOUR.map((_, k) => '<i class="' + (k <= i ? 'on' : '') + '"></i>').join('') + '<span>Step ' + (i + 1) + ' of ' + TOUR.length + '</span>';
   $('#tourTitle').textContent = st.title; $('#tourText').innerHTML = st.text;
