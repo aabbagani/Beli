@@ -250,10 +250,18 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, label:focus-w
 .fl { display: grid; gap: 8px; }
 .fl > .cap { color: #8a97a6; font-size: 12px; }
 .fl > .cap em { font-style: normal; font-weight: 600; letter-spacing: 0; text-transform: none; }
+:root { --like: #2e8b57; --like-bg: #e8f6ee; --fine: #a87d00; --fine-bg: #fff6d6; --bad: #d64545; --bad-bg: #fdecec; }
+.how button i { width: 22px; height: 22px; border-radius: 50%; display: block; }
+.how .t-like i { background: var(--like); } .how .t-fine i { background: #f2c230; } .how .t-bad i { background: var(--bad); }
+.how .t-like[aria-pressed="true"] { border-color: var(--like); background: var(--like-bg); color: #1e5e3b; }
+.how .t-fine[aria-pressed="true"] { border-color: #f2c230; background: var(--fine-bg); color: #7a5b00; }
+.how .t-bad[aria-pressed="true"] { border-color: var(--bad); background: var(--bad-bg); color: #9b2c2c; }
+.rt { font-weight: 700; } .rt.t-like { color: var(--like); } .rt.t-fine { color: var(--fine); } .rt.t-bad { color: var(--bad); }
+.stats .nums b.tone-like { color: var(--like); } .stats .nums b.tone-fine { color: var(--fine); } .stats .nums b.tone-bad { color: var(--bad); }
 .how { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .how button { border: 1px solid var(--line); background: #fff; border-radius: 14px; padding: 10px 4px; font-size: 13px; font-weight: 700; display: grid; justify-items: center; gap: 4px; }
-.how button i { font-style: normal; font-size: 20px; }
-.how button[aria-pressed="true"] { border-color: var(--teal); background: var(--mint); color: var(--deep); }
+
+
 .how.need button { border-color: var(--red); }
 .friends { display: flex; gap: 8px; flex-wrap: wrap; }
 .friends button { border: 1px solid var(--line); background: #fff; border-radius: 99px; padding: 6px 12px 6px 6px; display: inline-flex; gap: 6px; align-items: center; font-size: 13px; font-weight: 600; }
@@ -448,6 +456,7 @@ const IC = {
 
 /* Made-up data */
 const ME = { name: 'Satya Gooduru', init: 'SG', handle: '@satya.fooduru', where: 'Food enthusiast · Brooklyn' };
+const TONE = { 'Liked it': 'like', 'It was fine': 'fine', "Didn't like it": 'bad' };
 const SEED_VERIFIED = 13, SEED_STANDARD = 4, SAVED = 45, GOAL = 15;
 const FRIENDS = [{ id: 'maya', name: 'Maya', c: '#c0573c' }, { id: 'theo', name: 'Theo', c: '#3f6fa8' }, { id: 'sana', name: 'Sana', c: '#7a5aa6' }, { id: 'jules', name: 'Jules', c: '#2f7d6b' }];
 const R = [
@@ -545,14 +554,14 @@ function renderRest() {
     '<div class="hero" style="background:' + r.bg + '">' + r.emoji + '<small>' + esc(r.cuisine) + ' · ' + esc(r.hood) + '</small></div>' +
     '<div class="rbody"><div class="chips">' + (r.price ? '<span class="chip price-chip">$' + r.price + ' per person</span>' : '<span class="chip na-chip">Price: data unavailable</span>') + r.tags.map((t) => '<span class="chip">' + esc(t) + '</span>').join('') + '</div>' +
     '<div class="ctas">' + [['go', 'Go'], ['book', 'Book'], ['call', 'Call'], ['save', 'Save']].map(([k, l]) => '<button class="cta" type="button" data-cta="' + k + '"' + (k === 'save' ? ' aria-pressed="' + !!S.saved[r.id] + '"' : '') + '><span class="ic">' + IC[k] + '</span><span class="lb">' + (k === 'save' && S.saved[r.id] ? 'SAVED' : l.toUpperCase()) + '</span></button>').join('') + '</div>' +
-    '<div class="stats"><div class="nums"><div><small>BELI AVG</small><b>' + r.score + '</b></div><div><small>FRIENDS</small><b' + (r.friends ? '' : ' class="dim"') + '>' + (r.friends ? Math.round(r.friends) : '-') + '</b></div><div><small>YOURS</small><b' + (mine.length ? '' : ' class="dim"') + '>' + yours + '</b></div></div>' +
+    '<div class="stats"><div class="nums"><div><small>BELI AVG</small><b>' + r.score + '</b></div><div><small>FRIENDS</small><b' + (r.friends ? '' : ' class="dim"') + '>' + (r.friends ? Math.round(r.friends) : '-') + '</b></div><div><small>YOURS</small><b class="' + (mine.length ? 'tone-' + TONE[mine[0].rating] : 'dim') + '">' + yours + '</b></div></div>' +
     '<div class="modes">' + ['walk', 'car', 'bike', 'bus'].map((m, i) => '<span>' + IC[m] + r.modes[i] + ' min</span>').join('') + '</div></div>' +
     verifyCard(r) +
     '<div class="menu-h"><h3>Bestsellers</h3><button type="button" data-fullmenu>FULL MENU</button></div>' +
     (r.menu ? r.menu.map(([d, p]) => '<div class="dish">' + esc(d) + '<span>$' + p + '</span></div>').join('')
       : '<div class="na-box"><b>Data unavailable.</b> This place hasn\'t shared a menu or price yet. Similar places with full details:<div class="recs">' + r.recs.map((id) => '<button type="button" data-open="' + id + '">' + esc(RB[id].name) + '</button>').join('') + '</div></div>') +
     '<div class="revs-h"><h3>Reviews</h3><small>' + vN + ' of ' + allRev.length + ' from verified visits</small></div>' +
-    allRev.map((x) => '<div class="rev"><div class="who">' + avatar(x.by, x.c) + '<span><b>' + esc(x.me ? x.by + ' (you)' : x.by) + '</b><br><small>' + esc(x.r) + ' · ' + fmt(x.date) + '</small></span>' + (x.v ? vmark() : '') + '</div>' + (x.t ? '<p>' + esc(x.t) + '</p>' : '') + (x.m ? revExtras(x.m) : '') + '</div>').join('') +
+    allRev.map((x) => '<div class="rev"><div class="who">' + avatar(x.by, x.c) + '<span><b>' + esc(x.me ? x.by + ' (you)' : x.by) + '</b><br><small><span class="rt t-' + TONE[x.r] + '">' + esc(x.r) + '</span> · ' + fmt(x.date) + '</small></span>' + (x.v ? vmark() : '') + '</div>' + (x.t ? '<p>' + esc(x.t) + '</p>' : '') + (x.m ? revExtras(x.m) : '') + '</div>').join('') +
     '</div>' + reviewBar(r);
 }
 function reviewBar(r) {
@@ -624,7 +633,7 @@ function renderReview() {
     : '<div class="proof none" id="proof"><span class="oi">' + IC.cam + '</span><span><b>Not verified</b><small>Optional. Upload a receipt to add a Verified visit mark.</small></span><button class="act" type="button" data-receipt="review">Upload</button></div>' +
       (openVisit(r.id) ? '<p class="hintline">Your verified visit is still saved. <button class="skiplink" type="button" data-reattach>Use it again</button></p>' : '');
   $('#reviewSheet').innerHTML = '<div class="sh"><div><h3>' + (d.restored ? 'Your draft review' : 'New review') + '</h3><small>' + esc(r.name) + ' · ' + esc(r.hood) + (d.restored ? ' · Draft saved' : '') + '</small></div><button type="button" data-close="reviewSheet" aria-label="Close">×</button></div><div class="sb">' +
-    '<div class="fl"><span class="cap">How was it?</span><div class="how' + (d.needRating ? ' need' : '') + '" id="how">' + [['Liked it', '😋'], ['It was fine', '😐'], ["Didn't like it", '😕']].map(([l, e]) => '<button type="button" data-rate="' + esc(l) + '" aria-pressed="' + (d.rating === l) + '"><i>' + e + '</i>' + esc(l) + '</button>').join('') + '</div></div>' +
+    '<div class="fl"><span class="cap">How was it?</span><div class="how' + (d.needRating ? ' need' : '') + '" id="how">' + ['Liked it', 'It was fine', "Didn't like it"].map((l) => '<button type="button" class="t-' + TONE[l] + '" data-rate="' + esc(l) + '" aria-pressed="' + (d.rating === l) + '"><i></i>' + esc(l) + '</button>').join('') + '</div></div>' +
     '<div class="fl"><span class="cap">Who did you go with? <em>(optional)</em></span><div class="friends">' + FRIENDS.map((f) => '<button type="button" data-friend="' + f.id + '" aria-pressed="' + d.friends.includes(f.id) + '"><i style="background:' + f.c + '">' + f.name[0] + '</i>' + f.name + '</button>').join('') + '</div><p class="hintline">Shown with your review. Not used to verify the visit.</p></div>' +
     '<div class="fl"><span class="cap">Proof of visit <em>(optional)</em></span>' + proof + '</div>' +
     '<div class="fl"><span class="cap">Add notes</span><textarea id="note" placeholder="Tell us about the service, flavor profiles, and overall experience...">' + esc(d.note) + '</textarea></div>' +
@@ -697,7 +706,7 @@ function renderReceipt() {
 }
 function runCheck(good, instant) {
   const rc = ui.receipt; rc.phase = 'checking'; renderReceipt();
-  setTimeout(() => finishCheck(good), instant ? 0 : (reduced ? 200 : 600));
+  setTimeout(() => finishCheck(good), instant ? 0 : (reduced ? 200 : 500));
 }
 function finishCheck(good) {
   const rc = ui.receipt; if (!rc) return;
