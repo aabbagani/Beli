@@ -582,7 +582,7 @@ function renderProfile() {
   $('#v-profile').innerHTML = '<div class="prof"><div class="ttl">Your Profile</div>' +
     '<div class="pcard"><div class="bigav">' + ME.init + '</div><h3>' + esc(ME.name) + (done ? IC.verified : '') + '</h3><div class="handle">' + esc(ME.handle) + '</div><div class="tag">' + esc(ME.where) + '</div>' +
     '<div class="badgebox' + (done ? '' : ' locked') + '" id="badge"><div class="emoji">🏆</div><b>Verified Reviewer</b><small>' + (done ? 'A trusted community voice' : (GOAL - n) + ' more verified ' + (GOAL - n === 1 ? 'review' : 'reviews') + ' to earn this') + '</small>' +
-    '<div class="prog"><div class="lab"><span>' + Math.min(n, GOAL) + '/' + GOAL + ' verified reviews</span><span>' + (done ? '✓ Earned' : '') + '</span></div><div class="track"><i style="width:' + Math.min(100, (n / GOAL) * 100) + '%"></i></div><div class="note">Only reviews verified by calendar or receipt count.</div></div></div></div>' +
+    '<div class="prog"><div class="lab"><span>' + (done ? n + ' verified reviews' : n + '/' + GOAL + ' verified reviews') + '</span><span>' + (done ? '✓ Earned' : '') + '</span></div><div class="track"><i style="width:' + Math.min(100, (n / GOAL) * 100) + '%"></i></div><div class="note">Only reviews verified by calendar or receipt count.</div></div></div></div>' +
     '<div class="pcard mystats"><h4>My stats</h4><div class="g"><div><b>' + n + '</b><small>Verified reviews</small></div><div><b>' + standardCount() + '</b><small>Standard reviews</small></div><div><b>' + (SAVED + Object.values(S.saved).filter(Boolean).length) + '</b><small>Saved places</small></div><div><b>' + (n + standardCount()) + '</b><small>Places ranked</small></div></div></div>' +
     '<div class="pcard"><div class="setting"><span><b>Google Calendar</b><small>' + (S.calendar ? 'Connected. Used to find places you may have been.' : 'Not connected. Only receipt verification is offered.') + '</small></span><label class="switch"><input type="checkbox" id="calToggle"' + (S.calendar ? ' checked' : '') + ' aria-label="Google Calendar connected"><span></span></label></div></div>' +
     '</div>';
@@ -666,7 +666,7 @@ function postReview() {
   if (S.drafts) delete S.drafts[d.rid]; save(); closeSheet('reviewSheet'); ui.draft = null; render();
   const n = verifiedCount();
   if (d.proof && before < GOAL && n >= GOAL) { banner('🏆 Verified Reviewer badge earned!'); confetti(); setTimeout(() => go('profile'), 1200); }
-  else if (d.proof) banner('Review posted · ' + Math.min(n, GOAL) + '/' + GOAL + ' verified reviews');
+  else if (d.proof) banner('Review posted · ' + (n >= GOAL ? n + ' verified reviews' : n + '/' + GOAL + ' verified reviews'));
   else banner('Review posted');
 }
 function verifyCalendar() {
