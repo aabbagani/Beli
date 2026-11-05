@@ -1,0 +1,831 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2716%27%20fill%3D%27%231f4b57%27/%3E%3Cpath%20d%3D%27M18%2033l9%209%2019-20%27%20fill%3D%27none%27%20stroke%3D%27%23fff%27%20stroke-width%3D%277%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%3C/svg%3E">
+<title>Verified Visit Reviews · A concept for Beli</title>
+<meta name="description" content="A concept for Beli: diners prove a real visit with a calendar match or a receipt, so readers can tell which reviews to trust. Interactive prototype by Anvitha Abbagani, with made-up restaurants and people.">
+<link rel="canonical" href="https://beli.abbagani.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Verified Visit Reviews">
+<meta property="og:title" content="Verified Visit Reviews: a concept for Beli">
+<meta property="og:description" content="Prove you ate there with a calendar match or a receipt, and earn a Verified Reviewer badge. Try the interactive prototype.">
+<meta property="og:url" content="https://beli.abbagani.com/">
+<meta property="og:image" content="https://beli.abbagani.com/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A phone showing a restaurant page with a Verify Your Visit card.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1b2430; --muted: #8592a3; --line: #e6ebef; --bg: #f5f7f8; --card: #ffffff;
+  --deep: #1f4b57; --deep-2: #163a44; --teal: #2f8f83; --green: #2e8b57; --mint: #e9f7f2; --mint-2: #d3efe6;
+  --amber-bg: #fff8e1; --amber-line: #f6e3a1; --amber: #d97706; --amber-ink: #92400e; --red: #b42318;
+  --page: #e9eff0; --sans: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--page); color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.45; }
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:focus-visible, input:focus-visible, textarea:focus-visible, label:focus-within { outline: 2px solid #3b82f6; outline-offset: 2px; }
+.cap { font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+
+/* Page */
+.page { min-height: calc(100vh - 48px); display: grid; grid-template-columns: minmax(280px, 400px) auto; justify-content: center; align-items: center; gap: 56px; padding: 24px 32px; }
+.intro .eyebrow { color: var(--teal); }
+.intro h1 { font-size: 38px; line-height: 1.05; letter-spacing: -.02em; color: var(--deep); margin: 8px 0 12px; font-weight: 900; }
+.intro p { color: #4b5768; margin: 0 0 18px; font-size: 16px; }
+.intro .acts { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.pbtn { display: inline-flex; align-items: center; gap: 8px; border-radius: 14px; padding: 12px 18px; font-weight: 800; font-size: 14px; border: 1px solid #cdd8dc; background: #fff; color: var(--deep); }
+.pbtn.primary { background: var(--deep); border-color: var(--deep); color: #fff; }
+.pbtn.primary:hover { background: var(--deep-2); }
+.pbtn svg { width: 18px; height: 18px; }
+.linkbtn { background: none; border: 0; color: var(--deep); text-decoration: underline; text-underline-offset: 3px; font-size: 13px; padding: 4px; }
+.byline { text-align: center; padding: 14px 16px 20px; font-size: 12px; color: var(--muted); }
+.byline a { color: var(--deep); }
+
+/* Tutorial card (desktop: in the intro column) */
+.intro { position: relative; padding-bottom: 290px; }
+.tour { position: absolute; left: 0; right: 0; top: calc(100% - 266px); z-index: 10; background: #fff; border-radius: 22px; padding: 20px 22px 16px; box-shadow: 0 20px 50px rgba(31,75,87,.18); border: 2px solid var(--deep); }
+.tour[hidden] { display: none; }
+.tour .bar { padding-right: 26px; display: flex; align-items: center; gap: 5px; margin-bottom: 10px; }
+.tour .bar i { flex: 1; max-width: 28px; height: 6px; border-radius: 99px; background: #dde5e8; }
+.tour .bar i.on { background: var(--teal); }
+.tour .bar span { margin-left: 8px; font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+.tour h3 { margin: 0 0 6px; font-size: 20px; color: var(--deep); letter-spacing: -.01em; }
+.tour p { margin: 0; color: #3f4b5b; font-size: 15px; }
+.tour .nav-row { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
+.tour .nav-row .pbtn { padding: 9px 16px; }
+.tour .nav-row .pbtn:disabled { opacity: .35; cursor: default; }
+.tour .keys { font-size: 11px; color: var(--muted); }
+.tour .next { margin-left: auto; }
+.tour .x { position: absolute; top: 10px; right: 12px; border: 0; background: none; font-size: 22px; line-height: 1; color: var(--muted); padding: 6px; }
+
+/* Phone */
+.phone-wrap { position: relative; }
+.phone { width: 414px; height: 860px; border-radius: 56px; background: #0f1418; padding: 12px; box-shadow: 0 40px 90px rgba(15,35,45,.35); transform-origin: top center; }
+.screen { position: relative; width: 100%; height: 100%; border-radius: 44px; overflow: clip; background: var(--bg); }
+.scroll { position: absolute; inset: 0 0 84px; overflow-y: auto; overflow-x: hidden; scrollbar-width: none; }
+.scroll::-webkit-scrollbar { display: none; }
+.statusbar { height: 46px; display: flex; justify-content: space-between; align-items: center; padding: 6px 30px 0; font-size: 14px; font-weight: 700; }
+.view[hidden] { display: none; }
+
+/* Bottom nav */
+.tabbar { position: absolute; left: 0; right: 0; bottom: 0; height: 84px; background: #fff; border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(5, 1fr); align-items: start; padding: 10px 6px 0; z-index: 20; }
+.tab { border: 0; background: none; display: grid; justify-items: center; gap: 3px; font-size: 11px; font-weight: 600; color: var(--ink); padding: 2px 0; }
+.tab svg { width: 24px; height: 24px; }
+.tab[aria-current="page"] { color: var(--teal); }
+.tab.fab { margin-top: -26px; }
+.tab.fab .disc { width: 56px; height: 56px; border-radius: 50%; background: var(--deep); color: #fff; display: grid; place-items: center; box-shadow: 0 8px 20px rgba(31,75,87,.35); }
+.tab .av { width: 26px; height: 26px; border-radius: 50%; background: #b9412a; color: #fff; font-size: 10px; font-weight: 800; display: grid; place-items: center; }
+.tab[aria-current="page"] .av { box-shadow: 0 0 0 2px var(--teal); }
+
+/* Home */
+.home { padding: 6px 18px 24px; }
+.home h2 { margin: 4px 0 12px; font-size: 28px; letter-spacing: -.02em; color: var(--deep); font-weight: 900; }
+.searchbox { display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; }
+.searchbox svg { width: 18px; height: 18px; color: var(--muted); }
+.searchbox input { border: 0; outline: 0; flex: 1; background: none; font-size: 15px; min-width: 0; }
+.sec-h { display: flex; justify-content: space-between; align-items: baseline; margin: 20px 0 10px; }
+.sec-h h3 { margin: 0; font-size: 18px; font-weight: 800; letter-spacing: -.01em; }
+.sec-h small { color: var(--muted); font-size: 12px; }
+.places { display: grid; gap: 10px; border-radius: 18px; }
+.place { display: flex; gap: 12px; align-items: center; background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 10px; text-align: left; width: 100%; }
+.place .thumb { width: 56px; height: 56px; border-radius: 14px; flex: none; display: grid; place-items: center; font-size: 26px; }
+.place b { display: block; font-size: 15px; }
+.place .meta { font-size: 12px; color: var(--muted); }
+.pill { display: inline-flex; align-items: center; gap: 4px; border-radius: 99px; padding: 4px 9px; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+.pill.mint { background: var(--mint); color: var(--teal); }
+.pill.grey { background: #eef1f4; color: var(--muted); }
+.place .pill { margin-left: auto; }
+.row { display: flex; gap: 12px; align-items: center; padding: 12px 2px; border-bottom: 1px solid var(--line); width: 100%; background: none; border-left: 0; border-right: 0; border-top: 0; text-align: left; }
+.row .thumb { width: 52px; height: 52px; border-radius: 14px; flex: none; display: grid; place-items: center; font-size: 24px; }
+.row b { display: block; font-size: 15px; }
+.row .meta { font-size: 12px; color: var(--muted); }
+.score { margin-left: auto; width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--green); color: var(--green); font-weight: 800; font-size: 14px; display: grid; place-items: center; flex: none; }
+
+/* Restaurant page */
+.topbar { position: sticky; top: 0; z-index: 8; display: flex; align-items: center; gap: 12px; padding: 4px 16px 10px; background: rgba(245,247,248,.95); backdrop-filter: blur(8px); }
+.topbar button { border: 0; background: none; padding: 6px; margin-left: -6px; }
+.topbar svg { width: 24px; height: 24px; }
+.topbar h2 { margin: 0; font-size: 24px; line-height: 1.1; color: var(--deep); font-weight: 900; letter-spacing: -.02em; }
+.hero { margin: 0 16px; height: 150px; border-radius: 22px; display: grid; place-items: center; font-size: 64px; position: relative; overflow: hidden; }
+.hero small { position: absolute; left: 12px; bottom: 10px; background: rgba(0,0,0,.45); color: #fff; font-size: 11px; font-weight: 600; border-radius: 99px; padding: 3px 9px; }
+.rbody { padding: 14px 16px 24px; display: grid; gap: 16px; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip { background: #eaeef1; color: #4b5768; border-radius: 99px; padding: 6px 12px; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.sub { color: var(--muted); font-size: 13px; margin: -6px 0 0; }
+.sub b { color: var(--ink); }
+.ctas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; }
+.cta { border: 0; background: none; display: grid; justify-items: center; gap: 8px; padding: 0; }
+.cta .ic { width: 64px; height: 64px; border-radius: 18px; background: var(--mint); color: var(--teal); display: grid; place-items: center; box-shadow: 0 6px 14px rgba(47,143,131,.12); transition: transform .1s; }
+.cta:active .ic { transform: scale(.95); }
+.cta .ic svg { width: 26px; height: 26px; }
+.cta .lb { font-size: 12px; font-weight: 800; letter-spacing: .14em; color: #8a97a6; }
+.cta[aria-pressed="true"] .ic { background: var(--teal); color: #fff; }
+.stats { background: #fff; border: 1px solid var(--line); border-radius: 22px; padding: 14px 14px; display: flex; gap: 10px; align-items: center; }
+.stats .nums { display: flex; gap: 14px; padding-right: 12px; border-right: 1px solid var(--line); }
+.stats .nums div { display: grid; justify-items: center; gap: 2px; }
+.stats .nums small { font-size: 10px; font-weight: 800; letter-spacing: .08em; color: var(--muted); }
+.stats .nums b { font-size: 22px; color: var(--green); font-weight: 800; }
+.stats .nums b.dim { color: #b6c0cb; }
+.stats .modes { display: grid; grid-template-columns: repeat(4, 1fr); flex: 1; text-align: center; gap: 2px; }
+.stats .modes span { display: grid; justify-items: center; gap: 2px; font-size: 12px; font-weight: 700; color: #4b5768; }
+.stats .modes svg { width: 20px; height: 20px; color: #6b7686; }
+.price { background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+.price b { font-size: 18px; }
+.price .na { color: var(--muted); font-weight: 700; }
+
+.verify { background: #f1f4f6; border: 1px solid #dde4e8; border-radius: 24px; padding: 16px; box-shadow: 0 6px 16px rgba(20,40,50,.06); }
+.verify .head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.verify .vsub { margin: 2px 0 2px; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.verify h4 { margin: 0; font-size: 17px; font-weight: 900; letter-spacing: .06em; color: var(--deep); text-transform: uppercase; }
+.verify .head p { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+.verify .state { font-size: 12px; font-weight: 800; letter-spacing: .08em; color: var(--muted); white-space: nowrap; }
+.verify .state.ok { background: var(--mint); color: var(--teal); border-radius: 12px; padding: 6px 10px; }
+.opt { width: 100%; display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid transparent; border-radius: 16px; padding: 12px 14px; text-align: left; margin-top: 10px; }
+.opt .oi { width: 36px; height: 36px; border-radius: 50%; flex: none; display: grid; place-items: center; background: #eef1f4; color: #6b7686; }
+.opt .oi svg { width: 18px; height: 18px; }
+.opt.cal .oi { background: var(--teal); color: #fff; }
+.opt b { display: block; font-size: 15px; }
+.opt small { color: var(--muted); font-size: 12px; }
+.opt .act { margin-left: auto; font-size: 12px; font-weight: 800; letter-spacing: .1em; color: #8a97a6; }
+.opt.active { border-color: var(--teal); background: #f2fbf8; }
+.opt.active .act { color: var(--teal); }
+.opt:disabled { cursor: default; opacity: .6; }
+.verify .after { margin-top: 12px; display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.verify .after small { color: var(--muted); font-size: 12px; }
+.tbtn { border: 0; border-radius: 14px; background: var(--teal); color: #fff; font-weight: 800; font-size: 13px; letter-spacing: .06em; padding: 11px 16px; text-transform: uppercase; }
+.tbtn.ghost { background: #fff; color: var(--teal); border: 1px solid var(--mint-2); }
+.skiplink { border: 0; background: none; color: var(--muted); font-size: 12px; text-decoration: underline; padding: 6px 2px 0; }
+
+.menu-h { display: flex; justify-content: space-between; align-items: baseline; }
+.menu-h h3 { margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -.02em; }
+.menu-h button { border: 0; background: none; color: var(--teal); font-size: 12px; font-weight: 800; letter-spacing: .14em; }
+.dish { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; display: flex; justify-content: space-between; font-weight: 700; font-size: 16px; }
+.dish span { color: var(--teal); }
+.na-box { background: #fff; border: 1px dashed #cdd5db; border-radius: 16px; padding: 14px 16px; font-size: 13px; color: #4b5768; }
+.na-box .recs { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.na-box .recs button { border: 1px solid var(--mint-2); background: var(--mint); color: var(--teal); border-radius: 99px; padding: 6px 12px; font-weight: 700; font-size: 12px; }
+.rev { background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 12px 14px; }
+.rev .who { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.rev .av { width: 30px; height: 30px; border-radius: 50%; color: #fff; display: grid; place-items: center; font-size: 11px; font-weight: 800; flex: none; }
+.rev .who b { font-size: 14px; }
+.rev .who small { color: var(--muted); }
+.rev p { margin: 8px 0 0; font-size: 14px; }
+.vmark { display: inline-flex; align-items: center; gap: 4px; background: var(--mint); color: var(--teal); border-radius: 99px; padding: 3px 8px; font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; margin-left: auto; white-space: nowrap; }
+.vmark svg { width: 11px; height: 11px; }
+.rev .extra { color: var(--muted); font-size: 12px; margin: 6px 0 0; }
+.rthumbs { margin-top: 8px; } .rthumbs img { width: 52px; height: 52px; }
+.revs-h { display: flex; justify-content: space-between; align-items: baseline; }
+.revs-h h3 { margin: 0; font-size: 20px; font-weight: 900; }
+.revs-h small { color: var(--muted); font-size: 12px; }
+
+/* Profile */
+.prof { padding: 0 16px 24px; display: grid; gap: 16px; }
+.prof .ttl { text-align: center; font-size: 24px; font-weight: 900; color: var(--deep); margin: 4px 0 2px; }
+.pcard { background: #fff; border-radius: 26px; padding: 22px 18px; box-shadow: 0 8px 22px rgba(20,40,50,.07); text-align: center; }
+.pcard .bigav { width: 84px; height: 84px; border-radius: 50%; margin: 0 auto 10px; background: #b9412a; color: #fff; display: grid; place-items: center; font-size: 28px; font-weight: 800; box-shadow: 0 0 0 4px #fff, 0 0 0 6px var(--teal); }
+.pcard h3 { margin: 0; font-size: 22px; display: inline-flex; align-items: center; gap: 6px; }
+.pcard h3 svg { width: 20px; height: 20px; color: #3b82f6; }
+.pcard .handle { color: var(--teal); font-size: 14px; font-weight: 700; margin-top: 2px; }
+.pcard .tag { color: #8a97a6; font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; margin-top: 4px; }
+.badgebox { margin-top: 14px; border-radius: 20px; padding: 16px; border: 1px solid #cdeee2; background: #f0fbf6; }
+.badgebox .emoji { font-size: 34px; line-height: 1; }
+.badgebox b { display: block; margin-top: 6px; font-size: 17px; letter-spacing: .1em; color: var(--deep); text-transform: uppercase; }
+.badgebox small { display: block; font-size: 11px; font-weight: 800; letter-spacing: .1em; color: var(--teal); text-transform: uppercase; margin-top: 4px; }
+.badgebox.locked { background: #f4f6f8; border-color: var(--line); }
+.badgebox.locked .emoji { filter: grayscale(1); opacity: .5; }
+.badgebox.locked b { color: #8592a3; }
+.prog { margin-top: 10px; text-align: left; }
+.prog .lab { display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; color: var(--deep); }
+.prog .track { height: 8px; border-radius: 99px; background: #e3e9ec; margin-top: 6px; overflow: hidden; }
+.prog .track i { display: block; height: 100%; background: var(--teal); border-radius: 99px; transition: width .6s; }
+.prog .note { font-size: 11px; color: var(--muted); margin-top: 6px; }
+.mystats h4 { margin: 0 0 12px; text-align: left; font-size: 16px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.mystats .g { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.mystats .g div { background: #f5f7f9; border-radius: 16px; padding: 14px 6px; }
+.mystats .g b { display: block; font-size: 26px; }
+.mystats .g small { font-size: 11px; font-weight: 800; letter-spacing: .08em; color: #8a97a6; text-transform: uppercase; }
+.setting { display: flex; align-items: center; justify-content: space-between; gap: 10px; text-align: left; }
+.setting b { display: block; font-size: 15px; }
+.setting small { color: var(--muted); font-size: 12px; }
+
+/* Toggle */
+.switch { position: relative; width: 52px; height: 30px; flex: none; }
+.switch input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.switch span { position: absolute; inset: 0; border-radius: 99px; background: #cfd8e0; transition: background .2s; pointer-events: none; }
+.switch span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: transform .2s; }
+.switch input:checked + span { background: var(--teal); }
+.switch input:checked + span::after { transform: translateX(22px); }
+
+/* Banner */
+.banner { position: absolute; left: 14px; right: 14px; top: 50px; z-index: 40; background: var(--deep); color: #fff; border-radius: 22px; padding: 16px 18px; font-weight: 700; font-size: 15px; text-align: center; box-shadow: 0 14px 30px rgba(15,35,45,.35); transform: translateY(calc(-100% - 80px)); visibility: hidden; transition: transform .35s, visibility .35s cubic-bezier(.2,.9,.3,1.2); }
+.banner.show { transform: none; visibility: visible; }
+.banner.bad { background: #7a2318; }
+
+/* Sheets */
+.backdrop { position: absolute; inset: 0; background: rgba(15,23,32,.55); z-index: 30; opacity: 0; pointer-events: none; transition: opacity .2s; }
+.backdrop.show { opacity: 1; pointer-events: auto; }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; top: 70px; z-index: 31; background: #fff; border-radius: 30px 30px 0 0; transform: translateY(105%); transition: transform .3s cubic-bezier(.2,.8,.2,1); display: flex; flex-direction: column; }
+.sheet.show { transform: none; }
+.sheet .sh { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px 10px; border-bottom: 1px solid var(--line); }
+.sheet .sh h3 { margin: 0; font-size: 19px; font-weight: 900; color: var(--deep); }
+.sheet .sh small { display: block; color: var(--muted); font-size: 12px; }
+.sheet .sh button { border: 0; background: #eef1f4; border-radius: 50%; width: 32px; height: 32px; font-size: 18px; line-height: 1; }
+.sheet .sb { flex: 1; overflow-y: auto; padding: 16px 20px 28px; display: grid; gap: 18px; align-content: start; scrollbar-width: none; }
+.sheet .sb::-webkit-scrollbar { display: none; }
+.fl { display: grid; gap: 8px; }
+.fl > .cap { color: #8a97a6; font-size: 12px; }
+.fl > .cap em { font-style: normal; font-weight: 600; letter-spacing: 0; text-transform: none; }
+.how { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.how button { border: 1px solid var(--line); background: #fff; border-radius: 14px; padding: 10px 4px; font-size: 13px; font-weight: 700; display: grid; justify-items: center; gap: 4px; }
+.how button i { font-style: normal; font-size: 20px; }
+.how button[aria-pressed="true"] { border-color: var(--teal); background: var(--mint); color: var(--deep); }
+.how.need button { border-color: var(--red); }
+.friends { display: flex; gap: 8px; flex-wrap: wrap; }
+.friends button { border: 1px solid var(--line); background: #fff; border-radius: 99px; padding: 6px 12px 6px 6px; display: inline-flex; gap: 6px; align-items: center; font-size: 13px; font-weight: 600; }
+.friends button i { width: 22px; height: 22px; border-radius: 50%; color: #fff; font-style: normal; font-size: 10px; font-weight: 800; display: grid; place-items: center; }
+.friends button[aria-pressed="true"] { border-color: var(--teal); background: var(--mint); }
+.hintline { font-size: 12px; color: var(--muted); margin: 0; }
+.proof { border-radius: 16px; padding: 12px 14px; display: flex; gap: 12px; align-items: center; background: #f5f7f9; }
+.proof.ok { background: #f2fbf8; border: 1px solid var(--mint-2); }
+.proof .oi { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--teal); color: #fff; flex: none; }
+.proof .oi svg { width: 17px; height: 17px; }
+.proof.none .oi { background: #e6ebef; color: #6b7686; }
+.proof b { display: block; font-size: 14px; }
+.proof small { color: var(--muted); font-size: 12px; }
+.proof .act { margin-left: auto; border: 0; background: none; font-size: 12px; font-weight: 800; letter-spacing: .08em; color: var(--teal); text-transform: uppercase; }
+.proof .act.rm { color: var(--red); }
+textarea, .txt { width: 100%; border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; background: #fff; font-size: 15px; resize: vertical; }
+textarea { min-height: 84px; }
+.txt:disabled { background: #f5f7f9; color: #4b5768; }
+.photos { border-radius: 18px; background: #f5f7f9; padding: 14px; display: flex; align-items: center; gap: 12px; }
+.photos .oi { width: 36px; height: 36px; border-radius: 12px; background: var(--mint); color: var(--teal); display: grid; place-items: center; flex: none; }
+.photos .oi svg { width: 20px; height: 20px; }
+.photos b { display: block; font-size: 14px; }
+.photos small { color: var(--muted); font-size: 12px; }
+.photos label { margin-left: auto; border: 1px solid var(--line); background: #fff; border-radius: 14px; padding: 9px 12px; font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #4b5768; cursor: pointer; white-space: nowrap; position: relative; }
+.photos label input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.thumbs { display: flex; gap: 8px; flex-wrap: wrap; }
+.thumbs .th { position: relative; }
+.thumbs .th button { position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; border-radius: 50%; border: 2px solid #fff; background: var(--ink); color: #fff; font-size: 13px; line-height: 1; padding: 0; }
+.psamples { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.psamples button { border: 1px solid var(--line); background: #fff; border-radius: 14px; padding: 6px; display: grid; gap: 4px; justify-items: center; font-size: 11px; font-weight: 700; color: #4b5768; }
+.psamples img { width: 100%; aspect-ratio: 1; border-radius: 10px; display: block; }
+.psamples button[aria-pressed="true"] { border-color: var(--teal); box-shadow: 0 0 0 2px var(--mint-2); color: var(--teal); }
+.thumbs img { width: 64px; height: 64px; border-radius: 12px; object-fit: cover; }
+.stealth { border-radius: 18px; background: #f5f7f9; padding: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.stealth b { display: block; font-size: 15px; }
+.stealth small { color: var(--muted); font-size: 12px; }
+.nudge { background: var(--amber-bg); border: 1px solid var(--amber-line); border-radius: 20px; padding: 16px; }
+.nudge[hidden] { display: none; }
+.nudge p { margin: 0 0 12px; color: var(--amber-ink); font-weight: 700; font-size: 15px; }
+.nudge .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.nudge button { border-radius: 12px; padding: 11px; font-size: 13px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.nudge .an { background: #fff; border: 1px solid var(--amber-line); color: var(--amber-ink); }
+.nudge .sk { background: var(--amber); border: 1px solid var(--amber); color: #fff; }
+.submit { width: 100%; border: 0; border-radius: 18px; background: var(--teal); color: #fff; padding: 16px; font-size: 15px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; box-shadow: 0 10px 20px rgba(47,143,131,.25); }
+
+/* Receipt sheet */
+.samples { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.samples button { border: 1px solid var(--line); background: #fff; border-radius: 16px; padding: 10px; display: grid; gap: 6px; justify-items: center; font-size: 12px; font-weight: 700; color: #4b5768; }
+.samples svg { width: 100%; height: 120px; }
+.uploadbox { border: 2px dashed #cfd8de; border-radius: 18px; padding: 18px; text-align: center; position: relative; color: #4b5768; font-size: 14px; }
+.uploadbox b { color: var(--teal); }
+.uploadbox input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.check { border-radius: 18px; padding: 16px; background: #f5f7f9; display: grid; gap: 10px; justify-items: center; text-align: center; font-size: 14px; }
+.check img, .check svg.rc { max-width: 150px; max-height: 170px; border-radius: 10px; }
+.spin { width: 28px; height: 28px; border-radius: 50%; border: 3px solid var(--mint-2); border-top-color: var(--teal); animation: sp .8s linear infinite; }
+@keyframes sp { to { transform: rotate(360deg); } }
+.check.ok { background: #f2fbf8; }
+.check.bad { background: #fff3f1; }
+.check .res { font-weight: 800; }
+.check.ok .res { color: var(--teal); }
+.check.bad .res { color: var(--red); }
+
+/* Spotlight for the tutorial */
+.spot { position: relative; z-index: 6; box-shadow: 0 0 0 3px #3b82f6, 0 0 0 9999px rgba(15,23,32,.5) !important; border-radius: 20px; }
+.toast { position: absolute; left: 50%; bottom: 100px; transform: translateX(-50%) translateY(20px); z-index: 45; background: var(--ink); color: #fff; border-radius: 99px; padding: 8px 14px; font-size: 13px; font-weight: 600; opacity: 0; transition: .25s; white-space: nowrap; pointer-events: none; }
+.toast.show { opacity: 1; transform: translateX(-50%); }
+#confetti { position: fixed; inset: 0; pointer-events: none; z-index: 90; width: 100%; height: 100%; }
+.modal { position: fixed; inset: 0; z-index: 80; background: rgba(15,23,32,.55); display: grid; place-items: center; padding: 16px; }
+.modal[hidden] { display: none; }
+.modal .box { background: #fff; border-radius: 24px; max-width: 520px; width: 100%; padding: 24px; position: relative; }
+.modal h2 { margin: 0 0 6px; color: var(--deep); font-size: 26px; font-weight: 900; }
+.modal h4 { margin: 14px 0 4px; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--teal); }
+.modal p, .modal li { font-size: 14px; color: #3f4b5b; margin: 0; }
+.modal ul { margin: 0; padding-left: 18px; }
+.modal .x { position: absolute; top: 12px; right: 14px; border: 0; background: none; font-size: 22px; color: var(--muted); padding: 6px; }
+
+@media (max-width: 900px) {
+  .page { grid-template-columns: 1fr; gap: 20px; padding: 20px 16px 24px; justify-items: center; }
+  .byline { padding-bottom: 150px; }
+  .intro { max-width: 520px; padding-bottom: 0; }
+  .intro h1 { font-size: 30px; }
+  .tour { position: fixed; top: auto; left: 12px; right: 12px; bottom: 12px; margin: 0; z-index: 70; padding: 16px 18px 12px; }
+  .tour h3 { font-size: 18px; } .tour p { font-size: 14px; } .tour .keys { display: none; }
+}
+@media (max-width: 460px) {
+  .phone { width: 100%; height: 780px; border-radius: 0; padding: 0; box-shadow: none; background: none; }
+  .phone-wrap { width: calc(100% + 32px); margin: 0 -16px; }
+  .screen { border-radius: 0; border-top: 1px solid var(--line); }
+  .statusbar { display: none; }
+  .banner { top: 10px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <section class="intro">
+    <span class="cap eyebrow">A concept for Beli · Product case study</span>
+    <h1>Verified Visit Reviews</h1>
+    <p>Every diner I interviewed trusted reviews on other apps more than Beli's, so they left to double-check. This lets people prove they ate somewhere, with a <b>Google Calendar match</b> or a <b>receipt</b>, so readers can tell which reviews come from a real visit.</p>
+    <div class="acts">
+      <button class="pbtn primary" type="button" id="tourBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.2a2.6 2.6 0 0 1 5 .8c0 1.8-2.5 2.2-2.5 3.8M12 17h.01"/></svg>Quick tutorial</button>
+      <button class="pbtn" type="button" id="resetBtn">Start over</button>
+      <button class="linkbtn" type="button" id="aboutBtn">About this prototype</button>
+    </div>
+    <div class="tour" id="tour" hidden role="dialog" aria-labelledby="tourTitle" aria-live="polite">
+      <button class="x" type="button" id="tourClose" aria-label="Close tutorial">×</button>
+      <div class="bar" id="tourBar"></div>
+      <h3 id="tourTitle"></h3>
+      <p id="tourText"></p>
+      <div class="nav-row"><button class="pbtn" type="button" id="tourBack">Back</button><span class="keys">← → to move · Esc to close</span><button class="pbtn primary next" type="button" id="tourNext">Next</button></div>
+    </div>
+  </section>
+
+  <div class="phone-wrap" id="phoneWrap">
+    <div class="phone" id="phone">
+      <div class="screen" id="screen">
+        <div class="scroll" id="scroll">
+          <div class="statusbar" aria-hidden="true"><span>9:41</span><span>●●● ▮</span></div>
+          <div class="view" id="v-home"></div>
+          <div class="view" id="v-rest" hidden></div>
+          <div class="view" id="v-profile" hidden></div>
+        </div>
+        <nav class="tabbar" aria-label="App">
+          <button class="tab" type="button" data-tab="home" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Feed</button>
+          <button class="tab" type="button" data-tab="lists"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg>Your Lists</button>
+          <button class="tab fab" type="button" data-tab="search"><span class="disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>Search</button>
+          <button class="tab" type="button" data-tab="board"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3M12 14v4M8 21h8M9 18h6"/></svg>Leaderboard</button>
+          <button class="tab" type="button" data-tab="profile"><span class="av">SG</span>Profile</button>
+        </nav>
+        <div class="banner" id="banner" role="status"></div>
+        <div class="toast" id="toast" role="status"></div>
+        <div class="backdrop" id="backdrop"></div>
+        <section class="sheet" id="reviewSheet" aria-label="New review" inert></section>
+        <section class="sheet" id="receiptSheet" aria-label="Upload a receipt" inert></section>
+      </div>
+    </div>
+  </div>
+</div>
+<footer class="byline">Built by Anvitha Abbagani · <a href="https://abbagani.com" target="_blank" rel="noopener">abbagani.com</a> · <a href="https://abbagani.com/assets/projects/beli-prd.pdf" target="_blank" rel="noopener">Read the PRD (PDF)</a></footer>
+<canvas id="confetti" aria-hidden="true"></canvas>
+
+<div class="modal" id="about" hidden role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+  <div class="box">
+    <button class="x" type="button" id="aboutClose" aria-label="Close">×</button>
+    <h2 id="aboutTitle">About this prototype</h2>
+    <h4>The problem</h4>
+    <p>Every diner I interviewed trusted reviews on other platforms more than Beli's, so they left the app to double-check before deciding.</p>
+    <h4>What this prototype does</h4>
+    <ul>
+      <li>Verify Your Visit: a Google Calendar match or a receipt upload. Always optional.</li>
+      <li>Proof of Visit replaces the unused Add Labels field, and never asks twice.</li>
+      <li>A skippable nudge when a review has no photo or note.</li>
+      <li>Progress toward a Verified Reviewer badge at 15 verified reviews.</li>
+    </ul>
+    <h4>What it leaves out</h4>
+    <p>Real calendar access and receipt reading (both simulated), AI summaries, reputation sorting, share cards and creator programs, which are later phases in the PRD.</p>
+  </div>
+</div>
+
+<script>
+(() => {
+'use strict';
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const pad = (n) => String(n).padStart(2, '0');
+const TODAY = (() => { const d = new Date(); d.setHours(12, 0, 0, 0); return d; })();
+const iso = (d) => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const daysAgo = (n) => iso(new Date(TODAY.getTime() - n * 864e5));
+const parse = (s) => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d, 12); };
+const fmt = (s) => parse(s).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+const IC = {
+  back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>',
+  go: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 11l18-8-8 18-2-8z"/></svg>',
+  book: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>',
+  call: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z"/></svg>',
+  save: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 3h12v18l-6-4-6 4z"/></svg>',
+  cal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>',
+  cam: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
+  img: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><circle cx="9" cy="9" r="1.8"/><path d="M20.5 15l-5-5-11 11"/></svg>',
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  verified: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 2.1 3.2-.4.9 3.1 2.8 1.6-1.2 3 1.2 3-2.8 1.6-.9 3.1-3.2-.4L12 22l-2.4-2.1-3.2.4-.9-3.1-2.8-1.6 1.2-3-1.2-3 2.8-1.6.9-3.1 3.2.4z"/><path d="M8 12.3l2.6 2.6L16 9.5" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>',
+  walk: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M8 3c2 0 3 2 3 5s-1 6-2.5 6S6 11 6 8s.5-5 2-5zM16 9c2 0 2.5 2 2.5 5s-1 6-2.5 6-2.5-2-2.5-5 .5-6 2.5-6z"/></svg>',
+  car: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 15l1.5-5h13L20 15v3H4z"/><circle cx="7.5" cy="18" r="1.5"/><circle cx="16.5" cy="18" r="1.5"/></svg>',
+  bike: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="16" r="3.5"/><circle cx="18" cy="16" r="3.5"/><path d="M6 16l4-7h5l3 7M10 9l2 7h-6M14 6h3"/></svg>',
+  bus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="5" y="4" width="14" height="13" rx="2.5"/><path d="M5 11h14M8 20v-3M16 20v-3"/></svg>'
+};
+
+/* Made-up data */
+const ME = { name: 'Satya Gooduru', init: 'SG', handle: '@satya.fooduru', where: 'Food enthusiast · Brooklyn' };
+const SEED_VERIFIED = 13, SEED_STANDARD = 4, SAVED = 45, GOAL = 15;
+const FRIENDS = [{ id: 'maya', name: 'Maya', c: '#c0573c' }, { id: 'theo', name: 'Theo', c: '#3f6fa8' }, { id: 'sana', name: 'Sana', c: '#7a5aa6' }, { id: 'jules', name: 'Jules', c: '#2f7d6b' }];
+const R = [
+  { id: 'ember', name: 'Little Ember', cuisine: 'Wood-fired Italian', hood: 'West Village', emoji: '🍝', bg: 'linear-gradient(135deg,#f8c39a,#e07a4f)', score: 8.7, friends: 8.9, price: 45, modes: ['20', '7', '10', '12'],
+    tags: ['Date night', 'Casual dine'], menu: [['Charred broccolini pasta', 24], ['Ember-roasted half chicken', 31], ['Olive oil cake', 12]],
+    cal: { ago: 6, time: '7:30 PM' },
+    reviews: [{ by: 'Priya S.', c: '#8a5a2b', ago: 3, r: 'Liked it', v: 1, t: 'Order the broccolini pasta. The crust on the chicken is worth the wait.' },
+      { by: 'Marcus L.', c: '#3f6fa8', ago: 9, r: 'It was fine', v: 0, t: 'Nice room, but loud after 8.' },
+      { by: 'Hana W.', c: '#2f7d6b', ago: 15, r: 'Liked it', v: 1, t: 'Perfect date spot. Book a week ahead for weekends.' }] },
+  { id: 'saltgrass', name: 'Saltgrass Noodle Bar', cuisine: 'Ramen', hood: 'East Village', emoji: '🍜', bg: 'linear-gradient(135deg,#f6dfa4,#d9984a)', score: 8.4, friends: 8.2, price: 22, modes: ['9', '6', '4', '11'],
+    tags: ['Quick bite', 'Walk-ins only'], menu: [['Yuzu shio ramen', 18], ['Spicy miso tsukemen', 20], ['Pork belly buns (2)', 9]], cal: null,
+    reviews: [{ by: 'Dev P.', c: '#c0573c', ago: 2, r: 'Liked it', v: 1, t: 'The yuzu shio is light and bright. Counter seats move fast.' },
+      { by: 'Ama B.', c: '#2f7d6b', ago: 6, r: 'Liked it', v: 0, t: 'Best bowl under $20 in the neighborhood.' }] },
+  { id: 'juniper', name: 'Juniper Table', cuisine: 'Brunch', hood: 'Park Slope', emoji: '🥞', bg: 'linear-gradient(135deg,#d6ebc0,#8fbf6a)', score: 8.1, friends: 7.8, price: 32, modes: ['40', '18', '22', '28'],
+    tags: ['Brunch', 'Outdoor seating'], menu: [['Ricotta hotcakes', 17], ['Green shakshuka', 19], ['Cardamom latte', 6]], cal: { ago: 12, time: '11:00 AM' },
+    reviews: [{ by: 'Lena F.', c: '#7a5aa6', ago: 4, r: 'Liked it', v: 1, t: 'Hotcakes are the move. Patio fills by 11.' }] },
+  { id: 'marena', name: 'Casa Mareña', cuisine: 'Mexican seafood', hood: 'Williamsburg', emoji: '🌮', bg: 'linear-gradient(135deg,#a7e1df,#3f9fa6)', score: 8.9, friends: 9.1, price: 38, modes: ['35', '15', '18', '22'],
+    tags: ['Groups', 'Birthday'], menu: [['Aguachile verde', 19], ['Baja fish tacos (3)', 21], ['Mezcal paloma', 15]], cal: null,
+    reviews: [{ by: 'Tomas G.', c: '#2f7d6b', ago: 5, r: 'Liked it', v: 1, t: 'Aguachile was the best thing I ate this month.' }] },
+  { id: 'rosa', name: 'Bodega Rosa', cuisine: 'Spanish tapas', hood: 'Lower East Side', emoji: '🍷', bg: 'linear-gradient(135deg,#f3b9c6,#c25b78)', score: 7.6, friends: null, price: null, modes: ['17', '9', '8', '15'],
+    tags: ['Wine bar', 'Small plates'], menu: null, cal: null, recs: ['marena', 'ember'],
+    reviews: [{ by: 'Kai N.', c: '#8a5a2b', ago: 10, r: 'It was fine', v: 0, t: 'Fun spot, menu changes a lot.' }] }
+];
+const RB = Object.fromEntries(R.map((r) => [r.id, r]));
+
+/* State */
+const KEY = 'beli-vvr-v2';
+const fresh = () => ({ calendar: true, verif: {}, saved: {}, mine: [], used: [] });
+let S = fresh();
+try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(fresh(), JSON.parse(raw)); } catch (e) { /* storage blocked */ }
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* ignore */ } };
+const ui = { screen: 'home', rid: null, query: '', sheet: null, draft: null, receipt: null };
+const verifiedCount = () => SEED_VERIFIED + S.mine.filter((m) => m.verified).length;
+const standardCount = () => SEED_STANDARD + S.mine.filter((m) => !m.verified).length;
+const calFor = (r) => (S.calendar && r.cal ? { date: daysAgo(r.cal.ago), time: r.cal.time } : null);
+// One visit can verify one review: each calendar event or receipt is recorded once it's used.
+const proofUsed = (rid, method, date) => (S.used || []).some((u) => u.rid === rid && u.method === method && u.date === date);
+const openVisit = (rid) => (S.verif[rid] && !S.verif[rid].used ? S.verif[rid] : null);
+
+/* Helpers */
+let bannerT, toastT;
+function banner(text, bad) { const b = $('#banner'); b.textContent = text; b.classList.toggle('bad', !!bad); b.classList.add('show'); clearTimeout(bannerT); bannerT = setTimeout(() => b.classList.remove('show'), 2800); }
+function toast(text) { const t = $('#toast'); t.textContent = text; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 1800); }
+function confetti() {
+  if (reduced) return;
+  const cv = $('#confetti'); const ctx = cv.getContext('2d'); const dpr = window.devicePixelRatio || 1;
+  cv.width = innerWidth * dpr; cv.height = innerHeight * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const box = $('#phone').getBoundingClientRect(); const cols = ['#2f8f83', '#1f4b57', '#f2b33d', '#e07a4f'];
+  const P = Array.from({ length: 120 }, () => ({ x: box.left + box.width / 2 + (Math.random() - .5) * 120, y: box.top + box.height * .35, vx: (Math.random() - .5) * 12, vy: -Math.random() * 13 - 5, r: Math.random() * 3, vr: (Math.random() - .5) * .3, w: 6 + Math.random() * 5, h: 4 + Math.random() * 3, c: cols[Math.floor(Math.random() * 4)] }));
+  const t0 = performance.now();
+  (function f(t) { const el = t - t0; ctx.clearRect(0, 0, innerWidth, innerHeight); P.forEach((p) => { p.vy += .32; p.x += p.vx; p.y += p.vy; p.r += p.vr; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.globalAlpha = Math.max(0, 1 - el / 2200); ctx.fillStyle = p.c; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); ctx.restore(); }); if (el < 2200) requestAnimationFrame(f); else ctx.clearRect(0, 0, innerWidth, innerHeight); })(t0);
+}
+const avatar = (name, c) => '<span class="av" style="background:' + c + '">' + esc(name.split(' ').map((w) => w[0]).join('').slice(0, 2)) + '</span>';
+const vmark = () => '<span class="vmark">' + IC.check + 'Verified visit</span>';
+
+/* Screens */
+function renderHome() {
+  const q = ui.query.trim().toLowerCase();
+  const list = R.filter((r) => !q || (r.name + ' ' + r.cuisine + ' ' + r.hood).toLowerCase().includes(q));
+  const places = S.calendar ? R.filter((r) => r.cal) : [];
+  $('#v-home').innerHTML = '<div class="home"><h2>Discover</h2>' +
+    '<label class="searchbox">' + IC.search + '<input id="q" type="search" placeholder="Search restaurants, cuisines, neighborhoods" value="' + esc(ui.query) + '" aria-label="Search restaurants"></label>' +
+    (places.length ? '<div class="sec-h"><h3>Places you may have been</h3><small>From Calendar</small></div><div class="places" id="places">' + places.map((r) => {
+      const c = calFor(r); const v = S.verif[r.id];
+      return '<button class="place" type="button" data-open="' + r.id + '"><span class="thumb" style="background:' + r.bg + '">' + r.emoji + '</span><span><b>' + esc(r.name) + '</b><span class="meta">' + fmt(c.date) + ', ' + c.time + '</span></span>' +
+        (v && v.used ? '<span class="pill mint">✓ Reviewed</span>' : v ? '<span class="pill mint">✓ Verified</span>' : '<span class="pill grey">Verify visit</span>') + '</button>';
+    }).join('') + '</div>' : '') +
+    '<div class="sec-h"><h3>Restaurants near you</h3></div>' +
+    (list.length ? list.map((r) => '<button class="row" type="button" data-open="' + r.id + '"><span class="thumb" style="background:' + r.bg + '">' + r.emoji + '</span><span><b>' + esc(r.name) + '</b><span class="meta">' + esc(r.cuisine) + ' · ' + esc(r.hood) + (r.price ? ' · $' + r.price + ' pp' : '') + '</span></span><span class="score">' + r.score + '</span></button>').join('') : '<p class="hintline">No matches.</p>') +
+    '</div>';
+}
+function verifyCard(r) {
+  const v = S.verif[r.id]; const c = calFor(r); const reviewed = v && v.used;
+  const calUsed = c && proofUsed(r.id, 'calendar', c.date) && !(v && !reviewed);
+  const calRow = S.calendar ? (calUsed
+    ? '<button class="opt" type="button" disabled><span class="oi">' + IC.cal + '</span><span><b>Google Calendar</b><small>Already used for your ' + fmt(c.date) + ' review</small></span></button>'
+    : c
+    ? '<button class="opt cal' + (v && !reviewed && v.method === 'calendar' ? ' active' : '') + '" type="button" data-cal' + (v && !reviewed ? ' disabled' : '') + '><span class="oi">' + IC.cal + '</span><span><b>Google Calendar</b><small>' + (v && !reviewed && v.method === 'calendar' ? 'Matched: ' + fmt(c.date) + ', ' + c.time : 'Auto-detected &amp; matched') + '</small></span><span class="act">' + (v && !reviewed && v.method === 'calendar' ? 'Active' : 'Verify') + '</span></button>'
+    : '<button class="opt" type="button" disabled><span class="oi">' + IC.cal + '</span><span><b>Google Calendar</b><small>No event found for this place</small></span></button>') : '';
+  const rcRow = '<button class="opt' + (v && !reviewed && v.method === 'receipt' ? ' active' : '') + '" type="button" data-receipt' + (v && !reviewed ? ' disabled' : '') + '><span class="oi">' + IC.cam + '</span><span><b>Upload a receipt</b><small>' + (v && !reviewed && v.method === 'receipt' ? 'Matched: ' + fmt(v.date) : 'Add a photo of your receipt') + '</small></span><span class="act">' + (v && !reviewed && v.method === 'receipt' ? 'Active' : 'Select') + '</span></button>';
+  const state = v && !reviewed ? '<span class="state ok">✓ Verified</span>' : '<span class="state">Unverified</span>';
+  let after = '';
+  if (v && !reviewed) after = '<div class="after"><small>Your next review gets the Verified visit mark.</small><button class="tbtn" type="button" data-review>Write your review</button></div>';
+  else if (reviewed) after = '<div class="after"><small>✓ Your ' + fmt(v.date) + ' visit is reviewed. Each visit can verify one review.</small></div><button class="skiplink" type="button" data-review>Write another review without verifying</button>';
+  else after = '<button class="skiplink" type="button" data-review>Skip, write a review without verifying</button>';
+  return '<div class="verify" id="verify"><div class="head"><h4>Verify your visit</h4>' + state + '</div><p class="vsub">Optional: adds a verified badge to your review</p>' + calRow + rcRow + after + '</div>';
+}
+function renderRest() {
+  const r = RB[ui.rid]; if (!r) return;
+  const mine = S.mine.filter((m) => m.rid === r.id);
+  const allRev = mine.map((m) => ({ by: m.stealth ? 'Anonymous' : ME.name, c: m.stealth ? '#8592a3' : '#b9412a', date: m.date, r: m.rating, v: m.verified, t: m.note, me: 1, m })).concat(r.reviews.map((x) => Object.assign({ date: daysAgo(x.ago) }, x)));
+  const vN = allRev.filter((x) => x.v).length;
+  const yours = mine.length ? { 'Liked it': '8.7', 'It was fine': '5.6', "Didn't like it": '2.3' }[mine[0].rating] : '-';
+  $('#v-rest').innerHTML = '<div class="topbar"><button type="button" data-back aria-label="Back">' + IC.back + '</button><h2>' + esc(r.name) + '</h2></div>' +
+    '<div class="hero" style="background:' + r.bg + '">' + r.emoji + '<small>' + esc(r.cuisine) + ' · ' + esc(r.hood) + '</small></div>' +
+    '<div class="rbody"><div class="chips">' + r.tags.map((t) => '<span class="chip">' + esc(t) + '</span>').join('') + '</div>' +
+    '<div class="ctas">' + [['go', 'Go'], ['book', 'Book'], ['call', 'Call'], ['save', 'Save']].map(([k, l]) => '<button class="cta" type="button" data-cta="' + k + '"' + (k === 'save' ? ' aria-pressed="' + !!S.saved[r.id] + '"' : '') + '><span class="ic">' + IC[k] + '</span><span class="lb">' + (k === 'save' && S.saved[r.id] ? 'SAVED' : l.toUpperCase()) + '</span></button>').join('') + '</div>' +
+    '<div class="stats"><div class="nums"><div><small>BELI AVG</small><b>' + r.score + '</b></div><div><small>FRIENDS</small><b' + (r.friends ? '' : ' class="dim"') + '>' + (r.friends ? Math.round(r.friends) : '-') + '</b></div><div><small>YOURS</small><b' + (mine.length ? '' : ' class="dim"') + '>' + yours + '</b></div></div>' +
+    '<div class="modes">' + ['walk', 'car', 'bike', 'bus'].map((m, i) => '<span>' + IC[m] + r.modes[i] + ' min</span>').join('') + '</div></div>' +
+    '<div class="price"><span>Price per person</span>' + (r.price ? '<b>$' + r.price + '</b>' : '<span class="na">Data unavailable</span>') + '</div>' +
+    verifyCard(r) +
+    '<div class="menu-h"><h3>Bestsellers</h3><button type="button" data-fullmenu>FULL MENU</button></div>' +
+    (r.menu ? r.menu.map(([d, p]) => '<div class="dish">' + esc(d) + '<span>$' + p + '</span></div>').join('')
+      : '<div class="na-box"><b>Data unavailable.</b> This place hasn\'t shared a menu or price yet. Similar places with full details:<div class="recs">' + r.recs.map((id) => '<button type="button" data-open="' + id + '">' + esc(RB[id].name) + '</button>').join('') + '</div></div>') +
+    '<div class="revs-h"><h3>Reviews</h3><small>' + vN + ' of ' + allRev.length + ' from verified visits</small></div>' +
+    allRev.map((x) => '<div class="rev"><div class="who">' + avatar(x.by, x.c) + '<span><b>' + esc(x.me ? x.by + ' (you)' : x.by) + '</b><br><small>' + esc(x.r) + ' · ' + fmt(x.date) + '</small></span>' + (x.v ? vmark() : '') + '</div>' + (x.t ? '<p>' + esc(x.t) + '</p>' : '') + (x.m ? revExtras(x.m) : '') + '</div>').join('') +
+    '</div>';
+}
+function revExtras(m) {
+  const bits = [];
+  if (m.friends && m.friends.length) bits.push('With ' + m.friends.map((id) => FRIENDS.find((f) => f.id === id).name).join(', '));
+  if (m.dishes) bits.push('Favorites: ' + m.dishes);
+  if (m.stealth) bits.push('Posted anonymously');
+  return (bits.length ? '<p class="extra">' + esc(bits.join(' · ')) + '</p>' : '') + (m.photos && m.photos.length ? '<div class="thumbs rthumbs">' + m.photos.map((u) => '<img src="' + u + '" alt="">').join('') + '</div>' : '');
+}
+function renderProfile() {
+  const n = verifiedCount(); const done = n >= GOAL;
+  $('#v-profile').innerHTML = '<div class="prof"><div class="ttl">Your Profile</div>' +
+    '<div class="pcard"><div class="bigav">' + ME.init + '</div><h3>' + esc(ME.name) + (done ? IC.verified : '') + '</h3><div class="handle">' + esc(ME.handle) + '</div><div class="tag">' + esc(ME.where) + '</div>' +
+    '<div class="badgebox' + (done ? '' : ' locked') + '" id="badge"><div class="emoji">🏆</div><b>Verified Reviewer</b><small>' + (done ? 'A trusted community voice' : (GOAL - n) + ' more verified ' + (GOAL - n === 1 ? 'review' : 'reviews') + ' to earn this') + '</small>' +
+    '<div class="prog"><div class="lab"><span>' + Math.min(n, GOAL) + '/' + GOAL + ' verified reviews</span><span>' + (done ? '✓ Earned' : '') + '</span></div><div class="track"><i style="width:' + Math.min(100, (n / GOAL) * 100) + '%"></i></div><div class="note">Only reviews verified by calendar or receipt count.</div></div></div></div>' +
+    '<div class="pcard mystats"><h4>My stats</h4><div class="g"><div><b>' + n + '</b><small>Verified reviews</small></div><div><b>' + standardCount() + '</b><small>Standard reviews</small></div><div><b>' + (SAVED + Object.values(S.saved).filter(Boolean).length) + '</b><small>Saved places</small></div><div><b>' + (n + standardCount()) + '</b><small>Places ranked</small></div></div></div>' +
+    '<div class="pcard"><div class="setting"><span><b>Google Calendar</b><small>' + (S.calendar ? 'Connected. Used to find places you may have been.' : 'Not connected. Only receipt verification is offered.') + '</small></span><label class="switch"><input type="checkbox" id="calToggle"' + (S.calendar ? ' checked' : '') + ' aria-label="Google Calendar connected"><span></span></label></div></div>' +
+    '</div>';
+}
+function render() {
+  $('#v-home').hidden = ui.screen !== 'home'; $('#v-rest').hidden = ui.screen !== 'rest'; $('#v-profile').hidden = ui.screen !== 'profile';
+  if (ui.screen === 'home') renderHome(); if (ui.screen === 'rest') renderRest(); if (ui.screen === 'profile') renderProfile();
+  $$('.tab').forEach((t) => { const on = (t.dataset.tab === 'home' && ui.screen !== 'profile') || (t.dataset.tab === 'profile' && ui.screen === 'profile'); if (on) t.setAttribute('aria-current', 'page'); else t.removeAttribute('aria-current'); });
+}
+function go(screen, rid) { ui.screen = screen; if (rid) ui.rid = rid; render(); $('#scroll').scrollTop = 0; }
+
+/* Sheets */
+function openSheet(id) { const el = $('#' + id); el.inert = false; el.classList.add('show'); $('#backdrop').classList.add('show'); const x = el.querySelector('.sh button'); if (x) x.focus({ preventScroll: true }); }
+function closeSheet(id) { const el = $('#' + id); el.inert = true; el.classList.remove('show'); if (!$$('.sheet.show').length) $('#backdrop').classList.remove('show'); }
+function openReview() {
+  const r = RB[ui.rid]; const v = openVisit(r.id);
+  ui.draft = { rid: r.id, rating: null, friends: [], proof: v ? Object.assign({}, v) : null, note: '', dishes: '', photos: [], date: v ? v.date : iso(TODAY), stealth: false, nudged: false, showNudge: false };
+  renderReview(); openSheet('reviewSheet'); $('#reviewSheet .sb').scrollTop = 0;
+}
+function photoUrl(emoji, a, b) {
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + a + '"/><stop offset="1" stop-color="' + b + '"/></linearGradient></defs><rect width="120" height="120" fill="url(#g)"/><text x="60" y="78" font-size="54" text-anchor="middle">' + emoji + '</text></svg>';
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+}
+function samplePhotos(r) {
+  return [{ label: 'The dish', url: photoUrl(r.emoji, '#fde7cf', '#e8a172') }, { label: 'Drinks', url: photoUrl('🍹', '#d8f1ec', '#7cc7b8') }, { label: 'The room', url: photoUrl('🕯️', '#e7e2f3', '#9b8cc4') }];
+}
+function nudgeText(d) {
+  const noNote = !d.note.trim(), noPhoto = !d.photos.length;
+  if (noNote && noPhoto) return 'Add a photo or note to help others trust your review?';
+  if (noPhoto) return 'Add a photo to help others trust your review?';
+  return 'Add a note to help others trust your review?';
+}
+function renderReview() {
+  const d = ui.draft; const r = RB[d.rid]; const prevSb = $('#reviewSheet .sb'); const keep = prevSb ? prevSb.scrollTop : 0;
+  const proof = d.proof
+    ? '<div class="proof ok" id="proof"><span class="oi">' + (d.proof.method === 'calendar' ? IC.cal : IC.cam) + '</span><span><b>Verified via ' + d.proof.method + '</b><small>' + fmt(d.proof.date) + ' · this review gets the Verified visit mark</small></span><button class="act rm" type="button" data-rmproof>Remove</button></div>'
+    : '<div class="proof none" id="proof"><span class="oi">' + IC.cam + '</span><span><b>Not verified</b><small>Optional. Upload a receipt to add a Verified visit mark.</small></span><button class="act" type="button" data-receipt="review">Upload</button></div>' +
+      (openVisit(r.id) ? '<p class="hintline">Your verified visit is still saved. <button class="skiplink" type="button" data-reattach>Use it again</button></p>' : '');
+  $('#reviewSheet').innerHTML = '<div class="sh"><div><h3>New review</h3><small>' + esc(r.name) + ' · ' + esc(r.hood) + '</small></div><button type="button" data-close="reviewSheet" aria-label="Close">×</button></div><div class="sb">' +
+    '<div class="fl"><span class="cap">How was it?</span><div class="how' + (d.needRating ? ' need' : '') + '" id="how">' + [['Liked it', '😋'], ['It was fine', '😐'], ["Didn't like it", '😕']].map(([l, e]) => '<button type="button" data-rate="' + esc(l) + '" aria-pressed="' + (d.rating === l) + '"><i>' + e + '</i>' + esc(l) + '</button>').join('') + '</div></div>' +
+    '<div class="fl"><span class="cap">Who did you go with? <em>(optional)</em></span><div class="friends">' + FRIENDS.map((f) => '<button type="button" data-friend="' + f.id + '" aria-pressed="' + d.friends.includes(f.id) + '"><i style="background:' + f.c + '">' + f.name[0] + '</i>' + f.name + '</button>').join('') + '</div><p class="hintline">Shown with your review. Not used to verify the visit.</p></div>' +
+    '<div class="fl"><span class="cap">Proof of visit <em>(optional)</em></span>' + proof + '</div>' +
+    '<div class="fl"><span class="cap">Add notes</span><textarea id="note" placeholder="Tell us about the service, flavor profiles, and overall experience...">' + esc(d.note) + '</textarea></div>' +
+    '<div class="fl"><span class="cap">Add favorite dishes</span><input class="txt" id="dishes" placeholder="e.g., ' + esc(r.menu ? r.menu[0][0] + ', ' + r.menu[1][0] : 'Patatas bravas') + '..." value="' + esc(d.dishes) + '"></div>' +
+    '<div class="photos" id="photosRow"><span class="oi">' + IC.img + '</span><span><b>Add photos</b><small>Tap to add from your camera roll (sample photos)</small></span></div>' +
+    '<div class="psamples">' + samplePhotos(r).map((p, i) => '<button type="button" data-psample="' + i + '" aria-pressed="' + d.photos.includes(p.url) + '" aria-label="' + esc(p.label) + '"><img src="' + p.url + '" alt=""><span>' + esc(p.label) + '</span></button>').join('') + '</div>' +
+    (d.photos.length ? '<div class="thumbs">' + d.photos.map((u, i) => '<span class="th"><img src="' + u + '" alt="Photo ' + (i + 1) + '"><button type="button" data-rmphoto="' + i + '" aria-label="Remove photo ' + (i + 1) + '">×</button></span>').join('') + '</div>' : '') +
+    '<div class="fl"><span class="cap">Add visit date</span><input class="txt" type="date" id="vdate" value="' + (d.proof ? d.proof.date : d.date) + '" max="' + iso(TODAY) + '"' + (d.proof ? ' disabled' : '') + '>' + (d.proof ? '<p class="hintline">Set by your verified visit.</p>' : '') + '</div>' +
+    '<div class="stealth"><span><b>Stealth mode</b><small>Post this review anonymously</small></span><label class="switch"><input type="checkbox" id="stealth"' + (d.stealth ? ' checked' : '') + ' aria-label="Stealth mode"><span></span></label></div>' +
+    '<div class="nudge" id="nudge"' + (d.showNudge ? '' : ' hidden') + '><p>' + nudgeText(d) + '</p><div class="two"><button class="an" type="button" data-addnow>Add now</button><button class="sk" type="button" data-skip>Skip</button></div></div>' +
+    '<button class="submit" type="button" data-submit>Submit review</button></div>';
+  $('#reviewSheet .sb').scrollTop = keep;
+}
+function refreshNudge() { const d = ui.draft; if (d.showNudge && d.note.trim() && d.photos.length) d.showNudge = false; }
+function submitReview() {
+  const d = ui.draft;
+  if (!d.rating) { d.needRating = true; renderReview(); $('#reviewSheet .sb').scrollTop = 0; toast('Pick how it was first'); return; }
+  if ((!d.note.trim() || !d.photos.length) && !d.nudged) { d.nudged = true; d.showNudge = true; renderReview(); const sb = $('#reviewSheet .sb'); sb.scrollTop = sb.scrollHeight; return; }
+  postReview();
+}
+function postReview() {
+  const d = ui.draft; const before = verifiedCount();
+  S.mine.unshift({ rid: d.rid, rating: d.rating, note: d.note.trim(), verified: !!d.proof, method: d.proof ? d.proof.method : null, date: d.proof ? d.proof.date : d.date,
+    friends: d.friends.slice(), dishes: d.dishes.trim(), photos: d.photos.slice(), stealth: d.stealth });
+  if (d.proof) { (S.used = S.used || []).push({ rid: d.rid, method: d.proof.method, date: d.proof.date }); if (S.verif[d.rid]) S.verif[d.rid].used = true; }
+  save(); closeSheet('reviewSheet'); ui.draft = null; render();
+  const n = verifiedCount();
+  if (d.proof && before < GOAL && n >= GOAL) { banner('🏆 Verified Reviewer badge earned!'); confetti(); setTimeout(() => go('profile'), 1200); }
+  else if (d.proof) banner('Review posted · ' + Math.min(n, GOAL) + '/' + GOAL + ' verified reviews');
+  else banner('Review posted');
+}
+function verifyCalendar() {
+  const r = RB[ui.rid]; const c = calFor(r); if (!c || proofUsed(r.id, 'calendar', c.date)) return;
+  S.verif[r.id] = { method: 'calendar', date: c.date }; save(); render();
+  banner('✨ Visit verified via Google Calendar match!');
+}
+
+/* Receipt */
+function receiptSvg(good, r) {
+  const name = r ? r.name.toUpperCase() : 'RESTAURANT';
+  if (good) return '<svg class="rc" viewBox="0 0 120 150" role="img" aria-label="A clear receipt"><rect x="10" y="4" width="100" height="142" rx="4" fill="#fff" stroke="#d6dde2"/><text x="60" y="22" font-size="8" text-anchor="middle" font-weight="700" fill="#1b2430">' + esc(name.slice(0, 22)) + '</text><text x="60" y="33" font-size="6" text-anchor="middle" fill="#6b7686">' + fmt(daysAgo(3)) + ' · 8:14 PM</text><g fill="#b6c0cb"><rect x="20" y="46" width="52" height="4"/><rect x="84" y="46" width="16" height="4"/><rect x="20" y="58" width="44" height="4"/><rect x="84" y="58" width="16" height="4"/><rect x="20" y="70" width="48" height="4"/><rect x="84" y="70" width="16" height="4"/></g><line x1="20" x2="100" y1="86" y2="86" stroke="#d6dde2" stroke-dasharray="3 2"/><text x="20" y="100" font-size="8" font-weight="700" fill="#1b2430">TOTAL</text><text x="100" y="100" font-size="8" font-weight="700" text-anchor="end" fill="#1b2430">$47.30</text></svg>';
+  return '<svg class="rc" viewBox="0 0 120 150" role="img" aria-label="A blurry receipt"><defs><filter id="bl"><feGaussianBlur stdDeviation="2.4"/></filter></defs><rect x="10" y="4" width="100" height="142" rx="4" fill="#fbfaf7" stroke="#d6dde2"/><g filter="url(#bl)" fill="#9aa5b1"><rect x="26" y="16" width="68" height="7"/><rect x="36" y="28" width="48" height="5"/><rect x="20" y="46" width="52" height="4"/><rect x="84" y="46" width="16" height="4"/><rect x="20" y="58" width="44" height="4"/><rect x="20" y="96" width="30" height="6"/><rect x="74" y="96" width="26" height="6"/></g></svg>';
+}
+function openReceipt(from) {
+  ui.receipt = { rid: ui.rid, from, phase: 'pick' };
+  renderReceipt(); openSheet('receiptSheet');
+}
+function renderReceipt() {
+  const rc = ui.receipt; const r = RB[rc.rid];
+  let body = '';
+  if (rc.phase === 'pick') {
+    body = '<p class="hintline">Pick a photo of your receipt from your camera roll (sample photos). We look for the restaurant name and a visit date.</p>' +
+      '<div class="samples"><button type="button" data-sample="good">' + receiptSvg(true, r) + 'Clear receipt</button><button type="button" data-sample="bad">' + receiptSvg(false) + 'Blurry receipt</button></div>' +
+      '<p class="hintline">A photo or note is never required to verify.</p>';
+  } else if (rc.phase === 'checking') {
+    body = '<div class="check">' + rc.preview + '<div class="spin"></div><span>Checking for the restaurant name and a visit date…</span></div>';
+  } else if (rc.phase === 'ask') {
+    body = '<div class="check">' + rc.preview + '<span>This prototype can\'t read text, so you decide what the check finds. Does it show <b>' + esc(r.name) + '</b> and a date?</span><div style="display:flex;gap:8px"><button class="tbtn" type="button" data-judge="1">Name and date clear</button><button class="tbtn ghost" type="button" data-judge="0">Not readable</button></div></div>';
+  } else if (rc.phase === 'ok') {
+    body = '<div class="check ok">' + rc.preview + '<span class="res">✓ Receipt matched</span><span>' + esc(r.name) + ' · ' + fmt(daysAgo(3)) + '</span><button class="tbtn" type="button" data-receiptdone>' + (rc.from === 'review' ? 'Back to review' : 'Continue') + '</button></div>';
+  } else if (rc.phase === 'dup') {
+    body = '<div class="check bad">' + rc.preview + '<span class="res">Receipt already used</span><span>This receipt already verified your ' + fmt(daysAgo(3)) + ' review. Each visit can verify one review.</span><button class="tbtn ghost" type="button" data-close="receiptSheet">Close</button></div>';
+  } else {
+    body = '<div class="check bad">' + rc.preview + '<span class="res">Couldn\'t verify this receipt</span><span>The restaurant name or date isn\'t readable, so this visit stays unverified. You can still post a standard review.</span><div style="display:flex;gap:8px"><button class="tbtn" type="button" data-retry>Try another</button><button class="tbtn ghost" type="button" data-close="receiptSheet">Close</button></div></div>';
+  }
+  $('#receiptSheet').innerHTML = '<div class="sh"><div><h3>Upload a receipt</h3><small>' + esc(r.name) + '</small></div><button type="button" data-close="receiptSheet" aria-label="Close">×</button></div><div class="sb">' + body + '</div>';
+}
+function runCheck(good, instant) {
+  const rc = ui.receipt; rc.phase = 'checking'; renderReceipt();
+  setTimeout(() => finishCheck(good), instant ? 0 : (reduced ? 200 : 1000));
+}
+function finishCheck(good) {
+  const rc = ui.receipt; if (!rc) return;
+  if (good && proofUsed(rc.rid, 'receipt', daysAgo(3))) rc.phase = 'dup';
+  else if (good) {
+    rc.phase = 'ok'; S.verif[rc.rid] = { method: 'receipt', date: daysAgo(3) }; save();
+    if (ui.draft && rc.from === 'review') { ui.draft.proof = { method: 'receipt', date: daysAgo(3) }; ui.draft.date = daysAgo(3); renderReview(); }
+    render();
+  } else rc.phase = 'bad';
+  renderReceipt();
+}
+
+/* Events */
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b || b.disabled) return;
+  const ds = b.dataset;
+  if (ds.open) return go('rest', ds.open);
+  if (ds.tab) {
+    if (ds.tab === 'home') return go('home');
+    if (ds.tab === 'search') { go('home'); return setTimeout(() => $('#q') && $('#q').focus(), 50); }
+    if (ds.tab === 'profile') return go('profile');
+    return toast('Not part of this concept');
+  }
+  if ('back' in ds) return go('home');
+  if (ds.cta) {
+    const r = RB[ui.rid];
+    if (ds.cta === 'save') { S.saved[r.id] = !S.saved[r.id]; save(); render(); return toast(S.saved[r.id] ? 'Saved to your list' : 'Removed from saved'); }
+    return toast({ go: 'Opening directions (simulated)', book: 'Opening reservations (simulated)', call: 'Calling (simulated)' }[ds.cta]);
+  }
+  if ('fullmenu' in ds) return toast('Full menu not part of this concept');
+  if ('cal' in ds) return verifyCalendar();
+  if ('receipt' in ds) return openReceipt(ds.receipt === 'review' ? 'review' : 'module');
+  if ('review' in ds) return openReview();
+  if (ds.close) { closeSheet(ds.close); if (ds.close === 'reviewSheet') ui.draft = null; if (ds.close === 'receiptSheet') ui.receipt = null; return; }
+  if (ds.rate) { ui.draft.rating = ds.rate; ui.draft.needRating = false; return renderReview(); }
+  if (ds.friend) { const f = ui.draft.friends; const i = f.indexOf(ds.friend); if (i < 0) f.push(ds.friend); else f.splice(i, 1); return renderReview(); }
+  if (ds.psample) { const u = samplePhotos(RB[ui.draft.rid])[+ds.psample].url; const ph = ui.draft.photos; const i = ph.indexOf(u); if (i < 0) ph.push(u); else ph.splice(i, 1); refreshNudge(); return renderReview(); }
+  if (ds.rmphoto) { ui.draft.photos.splice(+ds.rmphoto, 1); refreshNudge(); return renderReview(); }
+  if ('rmproof' in ds) { ui.draft.proof = null; return renderReview(); }
+  if ('reattach' in ds) { ui.draft.proof = Object.assign({}, openVisit(ui.draft.rid)); return renderReview(); }
+  if ('submit' in ds) return submitReview();
+  if ('addnow' in ds) { ui.draft.showNudge = false; renderReview(); const t = !ui.draft.note.trim() ? $('#note') : $('#photosRow'); const sb = $('#reviewSheet .sb'); sb.scrollTop += t.getBoundingClientRect().top - sb.getBoundingClientRect().top - 60; if (t.id === 'note') t.focus({ preventScroll: true }); return; }
+  if ('skip' in ds) return postReview();
+  if (ds.sample) { ui.receipt.preview = receiptSvg(ds.sample === 'good', RB[ui.receipt.rid]); return runCheck(ds.sample === 'good'); }
+  if (ds.judge) return runCheck(ds.judge === '1');
+  if ('retry' in ds) { ui.receipt.phase = 'pick'; return renderReceipt(); }
+  if ('receiptdone' in ds) {
+    const from = ui.receipt.from; closeSheet('receiptSheet'); ui.receipt = null;
+    if (from !== 'review') banner('Visit verified via receipt!');
+    return;
+  }
+  switch (b.id) {
+    case 'tourBtn': return openTour(0);
+    case 'tourBack': return showStep(tour.i - 1);
+    case 'tourNext': return tour.i >= TOUR.length - 1 ? closeTour() : showStep(tour.i + 1);
+    case 'tourClose': return closeTour();
+    case 'resetBtn': closeTour(); return reset();
+    case 'aboutBtn': $('#about').hidden = false; return $('#aboutClose').focus();
+    case 'aboutClose': $('#about').hidden = true; return;
+  }
+});
+document.addEventListener('input', (e) => {
+  const t = e.target;
+  if (t.id === 'q') { ui.query = t.value; const pos = t.selectionStart; renderHome(); const q = $('#q'); q.focus(); q.setSelectionRange(pos, pos); }
+  if (!ui.draft) return;
+  if (t.id === 'note') { ui.draft.note = t.value; const n = $('#nudge p'); if (n) n.textContent = nudgeText(ui.draft); }
+  if (t.id === 'dishes') ui.draft.dishes = t.value;
+  if (t.id === 'vdate') ui.draft.date = t.value;
+});
+document.addEventListener('change', (e) => {
+  const t = e.target;
+  if (t.id === 'calToggle') { S.calendar = t.checked; save(); render(); return toast(S.calendar ? 'Google Calendar connected' : 'Calendar disconnected: receipt only'); }
+  if (t.id === 'stealth' && ui.draft) ui.draft.stealth = t.checked;
+  if (t.id === 'photoIn' && ui.draft) {
+    const files = Array.from(t.files || []).slice(0, 6); let left = files.length;
+    files.forEach((f) => { const fr = new FileReader(); fr.onload = () => { ui.draft.photos.push(fr.result); if (--left === 0) { refreshNudge(); renderReview(); } }; fr.readAsDataURL(f); });
+  }
+  if (t.id === 'receiptIn' && ui.receipt) {
+    const f = t.files && t.files[0]; if (!f) return;
+    const fr = new FileReader(); fr.onload = () => { ui.receipt.preview = '<img src="' + fr.result + '" alt="Your receipt">'; ui.receipt.phase = 'ask'; renderReceipt(); }; fr.readAsDataURL(f);
+  }
+});
+$('#about').addEventListener('click', (e) => { if (e.target.id === 'about') e.currentTarget.hidden = true; });
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    if ($('#receiptSheet').classList.contains('show')) { closeSheet('receiptSheet'); ui.receipt = null; return; }
+    if ($('#reviewSheet').classList.contains('show')) { closeSheet('reviewSheet'); ui.draft = null; return; }
+    $('#about').hidden = true; closeTour();
+  }
+  if (!tour.on || /INPUT|TEXTAREA/.test(document.activeElement.tagName)) return;
+  if (e.key === 'ArrowRight') { e.preventDefault(); tour.i >= TOUR.length - 1 ? closeTour() : showStep(tour.i + 1); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); showStep(tour.i - 1); }
+});
+function reset() {
+  try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ }
+  S = fresh(); ui.draft = null; ui.receipt = null; ui.query = '';
+  closeSheet('reviewSheet'); closeSheet('receiptSheet'); $('#banner').classList.remove('show');
+  go('home');
+}
+
+/* Quick tutorial: each step rebuilds its state from scratch, so Back and Next always agree */
+const D3 = () => daysAgo(3);
+const TOUR = [
+  { title: 'Places you may have been', text: 'Beli already reads Google Calendar for reservation-like events. Two dinners matched, so they show up here, ready to verify.',
+    setup: () => go('home'), spot: '#places' },
+  { title: 'Verify Your Visit', text: 'On the restaurant page, below Go, Book, Call and Save, the visit can be verified with a <b>calendar match</b> or a <b>receipt</b>. It\'s optional: you can still post a regular review.',
+    setup: () => go('rest', 'ember'), spot: '#verify' },
+  { title: 'One tap with a calendar match', text: 'The dinner was on the calendar, so one tap verifies it. The card switches to <b>Verified</b>.',
+    setup: () => { S.verif.ember = { method: 'calendar', date: daysAgo(6) }; go('rest', 'ember'); banner('✨ Visit verified via Google Calendar match!'); }, spot: '#verify' },
+  { title: 'Proof of Visit, never asked twice', text: 'The review form had an Add Labels field nobody used. <b>Proof of Visit</b> replaces it, and it already shows this visit as verified.',
+    setup: () => { S.verif.ember = { method: 'calendar', date: daysAgo(6) }; go('rest', 'ember'); openReview(); ui.draft.rating = 'Liked it'; renderReview(); }, spot: '#proof', sheet: true },
+  { title: 'A nudge you can skip', text: 'There\'s a note but no photo, so it asks only for what\'s missing. <b>Skip</b> posts the review anyway: it never blocks you.',
+    setup: () => { S.verif.ember = { method: 'calendar', date: daysAgo(6) }; go('rest', 'ember'); openReview(); Object.assign(ui.draft, { rating: 'Liked it', note: 'Get the broccolini pasta. Book ahead on weekends.', nudged: true, showNudge: true }); renderReview(); }, spot: '#nudge', sheet: true },
+  { title: 'A walk-in? Use a receipt', text: 'That review counted: <b>14 of 15</b>. This ramen spot had no calendar event, so a <b>receipt</b> verifies it. A blurry one is flagged and the visit stays unverified.',
+    setup: () => { S.verif.ember = { method: 'calendar', date: daysAgo(6), used: true }; S.used = [{ rid: 'ember', method: 'calendar', date: daysAgo(6) }]; S.mine = [{ rid: 'ember', rating: 'Liked it', note: 'Get the broccolini pasta. Book ahead on weekends.', verified: true, method: 'calendar', date: daysAgo(6) }];
+      go('rest', 'saltgrass'); openReceipt('module'); ui.receipt.preview = receiptSvg(true, RB.saltgrass); finishCheck(true); }, spot: '#receiptSheet .check', sheet: true },
+  { title: 'Fifteen verified reviews, one badge', text: 'The receipt-verified review makes <b>15</b>. Only verified reviews count, and the profile now shows the <b>Verified Reviewer</b> badge.',
+    setup: () => { S.verif.ember = { method: 'calendar', date: daysAgo(6), used: true }; S.verif.saltgrass = { method: 'receipt', date: D3(), used: true }; S.used = [{ rid: 'ember', method: 'calendar', date: daysAgo(6) }, { rid: 'saltgrass', method: 'receipt', date: D3() }];
+      S.mine = [{ rid: 'saltgrass', rating: 'Liked it', note: 'Yuzu shio is the one.', verified: true, method: 'receipt', date: D3() }, { rid: 'ember', rating: 'Liked it', note: 'Get the broccolini pasta. Book ahead on weekends.', verified: true, method: 'calendar', date: daysAgo(6) }];
+      go('profile'); }, spot: '#badge', confetti: true }
+];
+const tour = { on: false, i: 0, shown: false };
+function openTour(i) { tour.on = true; tour.shown = false; $('#tour').hidden = false; showStep(i); $('#tourNext').focus(); }
+function clearSpot() { $$('.spot').forEach((el) => el.classList.remove('spot')); }
+function showStep(i) {
+  if (i < 0 || i >= TOUR.length) return;
+  const st = TOUR[i]; const forward = !tour.shown || i > tour.i; tour.i = i; tour.shown = true;
+  S = fresh(); ui.draft = null; ui.receipt = null; ui.query = '';
+  closeSheet('reviewSheet'); closeSheet('receiptSheet'); $('#banner').classList.remove('show');
+  st.setup(); save();
+  clearSpot();
+  requestAnimationFrame(() => {
+    const el = $(st.spot); if (!el) return;
+    el.classList.add('spot');
+    if (innerWidth <= 900) window.scrollTo({ top: $('#phoneWrap').getBoundingClientRect().top + window.scrollY - 8, behavior: reduced ? 'auto' : 'smooth' });
+    const sc = st.sheet ? el.closest('.sb') : $('#scroll');
+    if (sc) { const d = el.getBoundingClientRect().top - sc.getBoundingClientRect().top; sc.scrollTop += d - (st.sheet ? 20 : (innerWidth <= 460 ? 60 : 90)); }
+  });
+  if (forward && st.confetti) setTimeout(confetti, 300);
+  $('#tourBar').innerHTML = TOUR.map((_, k) => '<i class="' + (k <= i ? 'on' : '') + '"></i>').join('') + '<span>Step ' + (i + 1) + ' of ' + TOUR.length + '</span>';
+  $('#tourTitle').textContent = st.title; $('#tourText').innerHTML = st.text;
+  $('#tourBack').disabled = i === 0; $('#tourNext').textContent = i === TOUR.length - 1 ? 'Done' : 'Next';
+}
+function closeTour() { if (!tour.on) return; tour.on = false; clearSpot(); $('#tour').hidden = true; }
+
+/* Fit the phone to the window */
+function fit() {
+  const ph = $('#phone'); const wrap = $('#phoneWrap');
+  if (innerWidth <= 460) { ph.style.transform = ''; wrap.style.height = ''; wrap.style.width = ''; return; }
+  const s = Math.min(1, (innerHeight - 90) / 884);
+  ph.style.transform = 'scale(' + s + ')'; wrap.style.height = (884 * s) + 'px'; wrap.style.width = (414 * s) + 'px';
+}
+addEventListener('resize', fit); fit();
+render();
+})();
+</script>
+</body>
+</html>
