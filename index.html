@@ -697,7 +697,7 @@ function renderReceipt() {
 }
 function runCheck(good, instant) {
   const rc = ui.receipt; rc.phase = 'checking'; renderReceipt();
-  setTimeout(() => finishCheck(good), instant ? 0 : (reduced ? 200 : 1000));
+  setTimeout(() => finishCheck(good), instant ? 0 : (reduced ? 200 : 600));
 }
 function finishCheck(good) {
   const rc = ui.receipt; if (!rc) return;
