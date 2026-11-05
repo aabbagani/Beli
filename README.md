@@ -10,6 +10,8 @@ prove a real visit, so readers can tell which reviews to trust.
 
 **What the prototype does:**
 - **Places you may have been:** visits matched from Google Calendar (simulated), ready to verify.
+- **Write a review** is always one tap away at the bottom of a restaurant page. Once a visit is
+  verified it becomes **Write a verified review**.
 - **Verify Your Visit** on the restaurant page, below Go / Book / Call / Save: one tap with a calendar
   match, or a receipt upload. A clear receipt passes; a blurry one is flagged and the visit stays
   unverified. Receipts and photos are sample images, so nothing is uploaded.

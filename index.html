@@ -116,7 +116,11 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, label:focus-w
 .hero { margin: 0 16px; height: 150px; border-radius: 22px; display: grid; place-items: center; font-size: 64px; position: relative; overflow: hidden; }
 .hero small { position: absolute; left: 12px; bottom: 10px; background: rgba(0,0,0,.45); color: #fff; font-size: 11px; font-weight: 600; border-radius: 99px; padding: 3px 9px; }
 .rbody { padding: 14px 16px 24px; display: grid; gap: 16px; }
-.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chips { display: flex; gap: 8px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 0 16px; }
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex: none; white-space: nowrap; }
+.chip.price-chip { background: var(--mint); color: var(--deep); letter-spacing: .04em; }
+.chip.na-chip { background: #fff; border: 1px dashed #cdd5db; color: var(--muted); }
 .chip { background: #eaeef1; color: #4b5768; border-radius: 99px; padding: 6px 12px; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .sub { color: var(--muted); font-size: 13px; margin: -6px 0 0; }
 .sub b { color: var(--ink); }
@@ -163,6 +167,10 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, label:focus-w
 .tbtn.ghost { background: #fff; color: var(--teal); border: 1px solid var(--mint-2); }
 .skiplink { border: 0; background: none; color: var(--muted); font-size: 12px; text-decoration: underline; padding: 6px 2px 0; }
 
+.rbar { position: sticky; bottom: 0; z-index: 7; padding: 10px 16px 12px; background: linear-gradient(to top, var(--bg) 70%, rgba(245,247,248,0)); }
+.rbtn { width: 100%; border: 0; border-radius: 16px; background: var(--deep); color: #fff; padding: 15px; font-size: 15px; font-weight: 800; letter-spacing: .02em; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 10px 22px rgba(31,75,87,.28); }
+.rbtn svg { width: 18px; height: 18px; }
+.rbtn.ok { background: var(--teal); }
 .menu-h { display: flex; justify-content: space-between; align-items: baseline; }
 .menu-h h3 { margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -.02em; }
 .menu-h button { border: 0; background: none; color: var(--teal); font-size: 12px; font-weight: 800; letter-spacing: .14em; }
@@ -522,9 +530,9 @@ function verifyCard(r) {
   const rcRow = '<button class="opt' + (v && !reviewed && v.method === 'receipt' ? ' active' : '') + '" type="button" data-receipt' + (v && !reviewed ? ' disabled' : '') + '><span class="oi">' + IC.cam + '</span><span><b>Upload a receipt</b><small>' + (v && !reviewed && v.method === 'receipt' ? 'Matched: ' + fmt(v.date) : 'Add a photo of your receipt') + '</small></span><span class="act">' + (v && !reviewed && v.method === 'receipt' ? 'Active' : 'Select') + '</span></button>';
   const state = v && !reviewed ? '<span class="state ok">✓ Verified</span>' : '<span class="state">Unverified</span>';
   let after = '';
-  if (v && !reviewed) after = '<div class="after"><small>Your next review gets the Verified visit mark.</small><button class="tbtn" type="button" data-review>Write your review</button></div>';
-  else if (reviewed) after = '<div class="after"><small>✓ Your ' + fmt(v.date) + ' visit is reviewed. Each visit can verify one review.</small></div><button class="skiplink" type="button" data-review>Write another review without verifying</button>';
-  else after = '<button class="skiplink" type="button" data-review>Skip, write a review without verifying</button>';
+  if (v && !reviewed) after = '<div class="after"><small>✓ Your next review gets the Verified visit mark.</small></div>';
+  else if (reviewed) after = '<div class="after"><small>✓ Your ' + fmt(v.date) + ' visit is reviewed. Each visit can verify one review.</small></div>';
+  else after = '';
   return '<div class="verify" id="verify"><div class="head"><h4>Verify your visit</h4>' + state + '</div><p class="vsub">Optional: adds a verified badge to your review</p>' + calRow + rcRow + after + '</div>';
 }
 function renderRest() {
@@ -535,18 +543,21 @@ function renderRest() {
   const yours = mine.length ? { 'Liked it': '8.7', 'It was fine': '5.6', "Didn't like it": '2.3' }[mine[0].rating] : '-';
   $('#v-rest').innerHTML = '<div class="topbar"><button type="button" data-back aria-label="Back">' + IC.back + '</button><h2>' + esc(r.name) + '</h2></div>' +
     '<div class="hero" style="background:' + r.bg + '">' + r.emoji + '<small>' + esc(r.cuisine) + ' · ' + esc(r.hood) + '</small></div>' +
-    '<div class="rbody"><div class="chips">' + r.tags.map((t) => '<span class="chip">' + esc(t) + '</span>').join('') + '</div>' +
+    '<div class="rbody"><div class="chips">' + (r.price ? '<span class="chip price-chip">$' + r.price + ' per person</span>' : '<span class="chip na-chip">Price: data unavailable</span>') + r.tags.map((t) => '<span class="chip">' + esc(t) + '</span>').join('') + '</div>' +
     '<div class="ctas">' + [['go', 'Go'], ['book', 'Book'], ['call', 'Call'], ['save', 'Save']].map(([k, l]) => '<button class="cta" type="button" data-cta="' + k + '"' + (k === 'save' ? ' aria-pressed="' + !!S.saved[r.id] + '"' : '') + '><span class="ic">' + IC[k] + '</span><span class="lb">' + (k === 'save' && S.saved[r.id] ? 'SAVED' : l.toUpperCase()) + '</span></button>').join('') + '</div>' +
     '<div class="stats"><div class="nums"><div><small>BELI AVG</small><b>' + r.score + '</b></div><div><small>FRIENDS</small><b' + (r.friends ? '' : ' class="dim"') + '>' + (r.friends ? Math.round(r.friends) : '-') + '</b></div><div><small>YOURS</small><b' + (mine.length ? '' : ' class="dim"') + '>' + yours + '</b></div></div>' +
     '<div class="modes">' + ['walk', 'car', 'bike', 'bus'].map((m, i) => '<span>' + IC[m] + r.modes[i] + ' min</span>').join('') + '</div></div>' +
-    '<div class="price"><span>Price per person</span>' + (r.price ? '<b>$' + r.price + '</b>' : '<span class="na">Data unavailable</span>') + '</div>' +
     verifyCard(r) +
     '<div class="menu-h"><h3>Bestsellers</h3><button type="button" data-fullmenu>FULL MENU</button></div>' +
     (r.menu ? r.menu.map(([d, p]) => '<div class="dish">' + esc(d) + '<span>$' + p + '</span></div>').join('')
       : '<div class="na-box"><b>Data unavailable.</b> This place hasn\'t shared a menu or price yet. Similar places with full details:<div class="recs">' + r.recs.map((id) => '<button type="button" data-open="' + id + '">' + esc(RB[id].name) + '</button>').join('') + '</div></div>') +
     '<div class="revs-h"><h3>Reviews</h3><small>' + vN + ' of ' + allRev.length + ' from verified visits</small></div>' +
     allRev.map((x) => '<div class="rev"><div class="who">' + avatar(x.by, x.c) + '<span><b>' + esc(x.me ? x.by + ' (you)' : x.by) + '</b><br><small>' + esc(x.r) + ' · ' + fmt(x.date) + '</small></span>' + (x.v ? vmark() : '') + '</div>' + (x.t ? '<p>' + esc(x.t) + '</p>' : '') + (x.m ? revExtras(x.m) : '') + '</div>').join('') +
-    '</div>';
+    '</div>' + reviewBar(r);
+}
+function reviewBar(r) {
+  const v = openVisit(r.id);
+  return '<div class="rbar"><button class="rbtn' + (v ? ' ok' : '') + '" type="button" data-review id="reviewBtn">' + (v ? IC.check + 'Write a verified review' : 'Write a review') + '</button></div>';
 }
 function revExtras(m) {
   const bits = [];
@@ -776,9 +787,9 @@ const D3 = () => daysAgo(3);
 const TOUR = [
   { title: 'Places you may have been', text: 'Beli already reads Google Calendar for reservation-like events. Two dinners matched, so they show up here, ready to verify.',
     setup: () => go('home'), spot: '#places' },
-  { title: 'Verify Your Visit', text: 'On the restaurant page, below Go, Book, Call and Save, the visit can be verified with a <b>calendar match</b> or a <b>receipt</b>. It\'s optional: you can still post a regular review.',
+  { title: 'Verify Your Visit', text: 'On the restaurant page, below Go, Book, Call and Save, the visit can be verified with a <b>calendar match</b> or a <b>receipt</b>. It\'s optional: <b>Write a review</b> at the bottom always works without it.',
     setup: () => go('rest', 'ember'), spot: '#verify' },
-  { title: 'One tap with a calendar match', text: 'The dinner was on the calendar, so one tap verifies it. The card switches to <b>Verified</b>.',
+  { title: 'One tap with a calendar match', text: 'The dinner was on the calendar, so one tap verifies it. The card switches to <b>Verified</b>, and the button at the bottom becomes <b>Write a verified review</b>.',
     setup: () => { S.verif.ember = { method: 'calendar', date: daysAgo(6) }; go('rest', 'ember'); banner('✨ Visit verified via Google Calendar match!'); }, spot: '#verify' },
   { title: 'Proof of Visit, never asked twice', text: 'The review form had an Add Labels field nobody used. <b>Proof of Visit</b> replaces it, and it already shows this visit as verified.',
     setup: () => { S.verif.ember = { method: 'calendar', date: daysAgo(6) }; go('rest', 'ember'); openReview(); ui.draft.rating = 'Liked it'; renderReview(); }, spot: '#proof', sheet: true },
