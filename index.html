@@ -633,7 +633,9 @@ function submitReview() {
   postReview();
 }
 function postReview() {
-  const d = ui.draft; const before = verifiedCount();
+  const d = ui.draft; if (!d) return;
+  if (!d.rating) { d.needRating = true; d.showNudge = false; d.nudged = false; renderReview(); $('#reviewSheet .sb').scrollTop = 0; toast('Pick how it was first'); return; }
+  const before = verifiedCount();
   S.mine.unshift({ rid: d.rid, rating: d.rating, note: d.note.trim(), verified: !!d.proof, method: d.proof ? d.proof.method : null, date: d.proof ? d.proof.date : d.date,
     friends: d.friends.slice(), dishes: d.dishes.trim(), photos: d.photos.slice(), stealth: d.stealth });
   if (d.proof) { (S.used = S.used || []).push({ rid: d.rid, method: d.proof.method, date: d.proof.date }); if (S.verif[d.rid]) S.verif[d.rid].used = true; }
@@ -792,8 +794,8 @@ const TOUR = [
   { title: 'One tap with a calendar match', text: 'The dinner was on the calendar, so one tap verifies it. The card switches to <b>Verified</b>, and the button at the bottom becomes <b>Write a verified review</b>.',
     setup: () => { S.verif.ember = { method: 'calendar', date: daysAgo(6) }; go('rest', 'ember'); banner('✨ Visit verified via Google Calendar match!'); }, spot: '#verify' },
   { title: 'Proof of Visit, never asked twice', text: 'The review form had an Add Labels field nobody used. <b>Proof of Visit</b> replaces it, and it already shows this visit as verified.',
-    setup: () => { S.verif.ember = { method: 'calendar', date: daysAgo(6) }; go('rest', 'ember'); openReview(); ui.draft.rating = 'Liked it'; renderReview(); }, spot: '#proof', sheet: true },
-  { title: 'A nudge you can skip', text: 'There\'s a note but no photo, so it asks only for what\'s missing. <b>Skip</b> posts the review anyway: it never blocks you.',
+    setup: () => { S.verif.ember = { method: 'calendar', date: daysAgo(6) }; go('rest', 'ember'); openReview(); }, spot: '#proof', sheet: true },
+  { title: 'A nudge you can skip', text: 'Here the diner picked <b>Liked it</b> and wrote a note, but added no photo, so it asks only for what\'s missing. <b>Skip</b> posts the review anyway: it never blocks you.',
     setup: () => { S.verif.ember = { method: 'calendar', date: daysAgo(6) }; go('rest', 'ember'); openReview(); Object.assign(ui.draft, { rating: 'Liked it', note: 'Get the broccolini pasta. Book ahead on weekends.', nudged: true, showNudge: true }); renderReview(); }, spot: '#nudge', sheet: true },
   { title: 'A walk-in? Use a receipt', text: 'That review counted: <b>14 of 15</b>. This ramen spot had no calendar event, so a <b>receipt</b> verifies it. A blurry one is flagged and the visit stays unverified.',
     setup: () => { S.verif.ember = { method: 'calendar', date: daysAgo(6), used: true }; S.used = [{ rid: 'ember', method: 'calendar', date: daysAgo(6) }]; S.mine = [{ rid: 'ember', rating: 'Liked it', note: 'Get the broccolini pasta. Book ahead on weekends.', verified: true, method: 'calendar', date: daysAgo(6) }];
@@ -825,7 +827,7 @@ function showStep(i) {
   $('#tourTitle').textContent = st.title; $('#tourText').innerHTML = st.text;
   $('#tourBack').disabled = i === 0; $('#tourNext').textContent = i === TOUR.length - 1 ? 'Done' : 'Next';
 }
-function closeTour() { if (!tour.on) return; tour.on = false; clearSpot(); $('#tour').hidden = true; }
+function closeTour() { if (!tour.on) return; tour.on = false; clearSpot(); closeSheet('reviewSheet'); closeSheet('receiptSheet'); ui.draft = null; ui.receipt = null; $('#tour').hidden = true; }
 
 /* Fit the phone to the window */
 function fit() {
