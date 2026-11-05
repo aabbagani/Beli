@@ -475,7 +475,7 @@ const RB = Object.fromEntries(R.map((r) => [r.id, r]));
 
 /* State */
 const KEY = 'beli-vvr-v2';
-const fresh = () => ({ calendar: true, verif: {}, saved: {}, mine: [], used: [] });
+const fresh = () => ({ calendar: true, verif: {}, saved: {}, mine: [], used: [], drafts: {} });
 let S = fresh();
 try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(fresh(), JSON.parse(raw)); } catch (e) { /* storage blocked */ }
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* ignore */ } };
@@ -557,7 +557,8 @@ function renderRest() {
 }
 function reviewBar(r) {
   const v = openVisit(r.id);
-  return '<div class="rbar"><button class="rbtn' + (v ? ' ok' : '') + '" type="button" data-review id="reviewBtn">' + (v ? IC.check + 'Write a verified review' : 'Write a review') + '</button></div>';
+  const draft = S.drafts && hasContent(S.drafts[r.id]);
+  return '<div class="rbar"><button class="rbtn' + (v ? ' ok' : '') + '" type="button" data-review id="reviewBtn">' + (v ? IC.check : '') + (draft ? 'Continue your review' : v ? 'Write a verified review' : 'Write a review') + '</button></div>';
 }
 function revExtras(m) {
   const bits = [];
@@ -586,11 +587,23 @@ function go(screen, rid) { ui.screen = screen; if (rid) ui.rid = rid; render(); 
 /* Sheets */
 function openSheet(id) { const el = $('#' + id); el.inert = false; el.classList.add('show'); $('#backdrop').classList.add('show'); const x = el.querySelector('.sh button'); if (x) x.focus({ preventScroll: true }); }
 function closeSheet(id) { const el = $('#' + id); el.inert = true; el.classList.remove('show'); if (!$$('.sheet.show').length) $('#backdrop').classList.remove('show'); }
+// Drafts are kept per restaurant, so closing the form never loses what was typed.
+const hasContent = (d) => !!(d && (d.rating || d.note.trim() || d.dishes.trim() || d.photos.length || d.friends.length || d.stealth));
 function openReview() {
   const r = RB[ui.rid]; const v = openVisit(r.id);
-  ui.draft = { rid: r.id, rating: null, friends: [], proof: v ? Object.assign({}, v) : null, note: '', dishes: '', photos: [], date: v ? v.date : iso(TODAY), stealth: false, nudged: false, showNudge: false };
+  S.drafts = S.drafts || {};
+  let d = S.drafts[r.id];
+  if (d) {
+    if (d.proof && !openVisit(r.id)) d.proof = null;
+    if (!d.proof && v && !d.proofRemoved) { d.proof = Object.assign({}, v); }
+    d.showNudge = false; d.needRating = false; d.restored = hasContent(d);
+  } else {
+    d = S.drafts[r.id] = { rid: r.id, rating: null, friends: [], proof: v ? Object.assign({}, v) : null, note: '', dishes: '', photos: [], date: v ? v.date : iso(TODAY), stealth: false, nudged: false, showNudge: false };
+  }
+  ui.draft = d; save();
   renderReview(); openSheet('reviewSheet'); $('#reviewSheet .sb').scrollTop = 0;
 }
+function closeReview() { if (ui.draft && !hasContent(ui.draft) && S.drafts) delete S.drafts[ui.draft.rid]; ui.draft = null; save(); closeSheet('reviewSheet'); render(); }
 function photoUrl(emoji, a, b) {
   const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + a + '"/><stop offset="1" stop-color="' + b + '"/></linearGradient></defs><rect width="120" height="120" fill="url(#g)"/><text x="60" y="78" font-size="54" text-anchor="middle">' + emoji + '</text></svg>';
   return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
@@ -610,7 +623,7 @@ function renderReview() {
     ? '<div class="proof ok" id="proof"><span class="oi">' + (d.proof.method === 'calendar' ? IC.cal : IC.cam) + '</span><span><b>Verified via ' + d.proof.method + '</b><small>' + fmt(d.proof.date) + ' · this review gets the Verified visit mark</small></span><button class="act rm" type="button" data-rmproof>Remove</button></div>'
     : '<div class="proof none" id="proof"><span class="oi">' + IC.cam + '</span><span><b>Not verified</b><small>Optional. Upload a receipt to add a Verified visit mark.</small></span><button class="act" type="button" data-receipt="review">Upload</button></div>' +
       (openVisit(r.id) ? '<p class="hintline">Your verified visit is still saved. <button class="skiplink" type="button" data-reattach>Use it again</button></p>' : '');
-  $('#reviewSheet').innerHTML = '<div class="sh"><div><h3>New review</h3><small>' + esc(r.name) + ' · ' + esc(r.hood) + '</small></div><button type="button" data-close="reviewSheet" aria-label="Close">×</button></div><div class="sb">' +
+  $('#reviewSheet').innerHTML = '<div class="sh"><div><h3>' + (d.restored ? 'Your draft review' : 'New review') + '</h3><small>' + esc(r.name) + ' · ' + esc(r.hood) + (d.restored ? ' · Draft saved' : '') + '</small></div><button type="button" data-close="reviewSheet" aria-label="Close">×</button></div><div class="sb">' +
     '<div class="fl"><span class="cap">How was it?</span><div class="how' + (d.needRating ? ' need' : '') + '" id="how">' + [['Liked it', '😋'], ['It was fine', '😐'], ["Didn't like it", '😕']].map(([l, e]) => '<button type="button" data-rate="' + esc(l) + '" aria-pressed="' + (d.rating === l) + '"><i>' + e + '</i>' + esc(l) + '</button>').join('') + '</div></div>' +
     '<div class="fl"><span class="cap">Who did you go with? <em>(optional)</em></span><div class="friends">' + FRIENDS.map((f) => '<button type="button" data-friend="' + f.id + '" aria-pressed="' + d.friends.includes(f.id) + '"><i style="background:' + f.c + '">' + f.name[0] + '</i>' + f.name + '</button>').join('') + '</div><p class="hintline">Shown with your review. Not used to verify the visit.</p></div>' +
     '<div class="fl"><span class="cap">Proof of visit <em>(optional)</em></span>' + proof + '</div>' +
@@ -624,6 +637,7 @@ function renderReview() {
     '<div class="nudge" id="nudge"' + (d.showNudge ? '' : ' hidden') + '><p>' + nudgeText(d) + '</p><div class="two"><button class="an" type="button" data-addnow>Add now</button><button class="sk" type="button" data-skip>Skip</button></div></div>' +
     '<button class="submit" type="button" data-submit>Submit review</button></div>';
   $('#reviewSheet .sb').scrollTop = keep;
+  save();
 }
 function refreshNudge() { const d = ui.draft; if (d.showNudge && d.note.trim() && d.photos.length) d.showNudge = false; }
 function submitReview() {
@@ -639,7 +653,7 @@ function postReview() {
   S.mine.unshift({ rid: d.rid, rating: d.rating, note: d.note.trim(), verified: !!d.proof, method: d.proof ? d.proof.method : null, date: d.proof ? d.proof.date : d.date,
     friends: d.friends.slice(), dishes: d.dishes.trim(), photos: d.photos.slice(), stealth: d.stealth });
   if (d.proof) { (S.used = S.used || []).push({ rid: d.rid, method: d.proof.method, date: d.proof.date }); if (S.verif[d.rid]) S.verif[d.rid].used = true; }
-  save(); closeSheet('reviewSheet'); ui.draft = null; render();
+  if (S.drafts) delete S.drafts[d.rid]; save(); closeSheet('reviewSheet'); ui.draft = null; render();
   const n = verifiedCount();
   if (d.proof && before < GOAL && n >= GOAL) { banner('🏆 Verified Reviewer badge earned!'); confetti(); setTimeout(() => go('profile'), 1200); }
   else if (d.proof) banner('Review posted · ' + Math.min(n, GOAL) + '/' + GOAL + ' verified reviews');
@@ -717,13 +731,13 @@ document.addEventListener('click', (e) => {
   if ('cal' in ds) return verifyCalendar();
   if ('receipt' in ds) return openReceipt(ds.receipt === 'review' ? 'review' : 'module');
   if ('review' in ds) return openReview();
-  if (ds.close) { closeSheet(ds.close); if (ds.close === 'reviewSheet') ui.draft = null; if (ds.close === 'receiptSheet') ui.receipt = null; return; }
+  if (ds.close) { if (ds.close === 'reviewSheet') return closeReview(); closeSheet(ds.close); if (ds.close === 'receiptSheet') ui.receipt = null; return; }
   if (ds.rate) { ui.draft.rating = ds.rate; ui.draft.needRating = false; return renderReview(); }
   if (ds.friend) { const f = ui.draft.friends; const i = f.indexOf(ds.friend); if (i < 0) f.push(ds.friend); else f.splice(i, 1); return renderReview(); }
   if (ds.psample) { const u = samplePhotos(RB[ui.draft.rid])[+ds.psample].url; const ph = ui.draft.photos; const i = ph.indexOf(u); if (i < 0) ph.push(u); else ph.splice(i, 1); refreshNudge(); return renderReview(); }
   if (ds.rmphoto) { ui.draft.photos.splice(+ds.rmphoto, 1); refreshNudge(); return renderReview(); }
-  if ('rmproof' in ds) { ui.draft.proof = null; return renderReview(); }
-  if ('reattach' in ds) { ui.draft.proof = Object.assign({}, openVisit(ui.draft.rid)); return renderReview(); }
+  if ('rmproof' in ds) { ui.draft.proof = null; ui.draft.proofRemoved = true; save(); return renderReview(); }
+  if ('reattach' in ds) { ui.draft.proof = Object.assign({}, openVisit(ui.draft.rid)); ui.draft.proofRemoved = false; save(); return renderReview(); }
   if ('submit' in ds) return submitReview();
   if ('addnow' in ds) { ui.draft.showNudge = false; renderReview(); const t = !ui.draft.note.trim() ? $('#note') : $('#photosRow'); const sb = $('#reviewSheet .sb'); sb.scrollTop += t.getBoundingClientRect().top - sb.getBoundingClientRect().top - 60; if (t.id === 'note') t.focus({ preventScroll: true }); return; }
   if ('skip' in ds) return postReview();
@@ -746,7 +760,7 @@ document.addEventListener('click', (e) => {
   }
 });
 document.addEventListener('input', (e) => {
-  const t = e.target;
+  const t = e.target; if (ui.draft) setTimeout(save, 0);
   if (t.id === 'q') { ui.query = t.value; const pos = t.selectionStart; renderHome(); const q = $('#q'); q.focus(); q.setSelectionRange(pos, pos); }
   if (!ui.draft) return;
   if (t.id === 'note') { ui.draft.note = t.value; const n = $('#nudge p'); if (n) n.textContent = nudgeText(ui.draft); }
@@ -756,7 +770,7 @@ document.addEventListener('input', (e) => {
 document.addEventListener('change', (e) => {
   const t = e.target;
   if (t.id === 'calToggle') { S.calendar = t.checked; save(); render(); return toast(S.calendar ? 'Google Calendar connected' : 'Calendar disconnected: receipt only'); }
-  if (t.id === 'stealth' && ui.draft) ui.draft.stealth = t.checked;
+  if (t.id === 'stealth' && ui.draft) { ui.draft.stealth = t.checked; save(); }
   if (t.id === 'photoIn' && ui.draft) {
     const files = Array.from(t.files || []).slice(0, 6); let left = files.length;
     files.forEach((f) => { const fr = new FileReader(); fr.onload = () => { ui.draft.photos.push(fr.result); if (--left === 0) { refreshNudge(); renderReview(); } }; fr.readAsDataURL(f); });
@@ -770,7 +784,7 @@ $('#about').addEventListener('click', (e) => { if (e.target.id === 'about') e.cu
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     if ($('#receiptSheet').classList.contains('show')) { closeSheet('receiptSheet'); ui.receipt = null; return; }
-    if ($('#reviewSheet').classList.contains('show')) { closeSheet('reviewSheet'); ui.draft = null; return; }
+    if ($('#reviewSheet').classList.contains('show')) { closeReview(); return; }
     $('#about').hidden = true; closeTour();
   }
   if (!tour.on || /INPUT|TEXTAREA/.test(document.activeElement.tagName)) return;
@@ -827,7 +841,7 @@ function showStep(i) {
   $('#tourTitle').textContent = st.title; $('#tourText').innerHTML = st.text;
   $('#tourBack').disabled = i === 0; $('#tourNext').textContent = i === TOUR.length - 1 ? 'Done' : 'Next';
 }
-function closeTour() { if (!tour.on) return; tour.on = false; clearSpot(); closeSheet('reviewSheet'); closeSheet('receiptSheet'); ui.draft = null; ui.receipt = null; $('#tour').hidden = true; }
+function closeTour() { if (!tour.on) return; tour.on = false; clearSpot(); closeSheet('reviewSheet'); closeSheet('receiptSheet'); ui.draft = null; ui.receipt = null; S.drafts = {}; save(); render(); $('#tour').hidden = true; }
 
 /* Fit the phone to the window */
 function fit() {
