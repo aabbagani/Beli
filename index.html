@@ -494,6 +494,7 @@ const standardCount = () => SEED_STANDARD + S.mine.filter((m) => !m.verified).le
 const calFor = (r) => (S.calendar && r.cal ? { date: daysAgo(r.cal.ago), time: r.cal.time } : null);
 // One visit can verify one review: each calendar event or receipt is recorded once it's used.
 const proofUsed = (rid, method, date) => (S.used || []).some((u) => u.rid === rid && u.method === method && u.date === date);
+const receiptDate = (rid) => { for (const n of [3, 10, 17, 24, 31, 38, 45, 52]) { const d = daysAgo(n); if (!proofUsed(rid, 'receipt', d)) return d; } return daysAgo(59); };
 const openVisit = (rid) => (S.verif[rid] && !S.verif[rid].used ? S.verif[rid] : null);
 
 /* Helpers */
@@ -536,7 +537,7 @@ function verifyCard(r) {
     : c
     ? '<button class="opt cal' + (v && !reviewed && v.method === 'calendar' ? ' active' : '') + '" type="button" data-cal' + (v && !reviewed ? ' disabled' : '') + '><span class="oi">' + IC.cal + '</span><span><b>Google Calendar</b><small>' + (v && !reviewed && v.method === 'calendar' ? 'Matched: ' + fmt(c.date) + ', ' + c.time : 'Auto-detected &amp; matched') + '</small></span><span class="act">' + (v && !reviewed && v.method === 'calendar' ? 'Active' : 'Verify') + '</span></button>'
     : '<button class="opt" type="button" disabled><span class="oi">' + IC.cal + '</span><span><b>Google Calendar</b><small>No event found for this place</small></span></button>') : '';
-  const rcRow = '<button class="opt' + (v && !reviewed && v.method === 'receipt' ? ' active' : '') + '" type="button" data-receipt' + (v && !reviewed ? ' disabled' : '') + '><span class="oi">' + IC.cam + '</span><span><b>Upload a receipt</b><small>' + (v && !reviewed && v.method === 'receipt' ? 'Matched: ' + fmt(v.date) : 'Add a photo of your receipt') + '</small></span><span class="act">' + (v && !reviewed && v.method === 'receipt' ? 'Active' : 'Select') + '</span></button>';
+  const rcRow = '<button class="opt' + (v && !reviewed && v.method === 'receipt' ? ' active' : '') + '" type="button" data-receipt' + (v && !reviewed ? ' disabled' : '') + '><span class="oi">' + IC.cam + '</span><span><b>Upload a receipt</b><small>' + (v && !reviewed && v.method === 'receipt' ? 'Matched: ' + fmt(v.date) : v && !reviewed ? 'Not needed: this visit is verified' : 'Add a photo of your receipt') + '</small></span><span class="act">' + (v && !reviewed && v.method === 'receipt' ? 'Active' : v && !reviewed ? '' : 'Select') + '</span></button>';
   const state = v && !reviewed ? '<span class="state ok">✓ Verified</span>' : '<span class="state">Unverified</span>';
   let after = '';
   if (v && !reviewed) after = '<div class="after"><small>✓ Your next review gets the Verified visit mark.</small></div>';
@@ -675,13 +676,13 @@ function verifyCalendar() {
 }
 
 /* Receipt */
-function receiptSvg(good, r) {
+function receiptSvg(good, r, date) {
   const name = r ? r.name.toUpperCase() : 'RESTAURANT';
-  if (good) return '<svg class="rc" viewBox="0 0 120 150" role="img" aria-label="A clear receipt"><rect x="10" y="4" width="100" height="142" rx="4" fill="#fff" stroke="#d6dde2"/><text x="60" y="22" font-size="8" text-anchor="middle" font-weight="700" fill="#1b2430">' + esc(name.slice(0, 22)) + '</text><text x="60" y="33" font-size="6" text-anchor="middle" fill="#6b7686">' + fmt(daysAgo(3)) + ' · 8:14 PM</text><g fill="#b6c0cb"><rect x="20" y="46" width="52" height="4"/><rect x="84" y="46" width="16" height="4"/><rect x="20" y="58" width="44" height="4"/><rect x="84" y="58" width="16" height="4"/><rect x="20" y="70" width="48" height="4"/><rect x="84" y="70" width="16" height="4"/></g><line x1="20" x2="100" y1="86" y2="86" stroke="#d6dde2" stroke-dasharray="3 2"/><text x="20" y="100" font-size="8" font-weight="700" fill="#1b2430">TOTAL</text><text x="100" y="100" font-size="8" font-weight="700" text-anchor="end" fill="#1b2430">$47.30</text></svg>';
+  if (good) return '<svg class="rc" viewBox="0 0 120 150" role="img" aria-label="A clear receipt"><rect x="10" y="4" width="100" height="142" rx="4" fill="#fff" stroke="#d6dde2"/><text x="60" y="22" font-size="8" text-anchor="middle" font-weight="700" fill="#1b2430">' + esc(name.slice(0, 22)) + '</text><text x="60" y="33" font-size="6" text-anchor="middle" fill="#6b7686">' + fmt(date || daysAgo(3)) + ' · 8:14 PM</text><g fill="#b6c0cb"><rect x="20" y="46" width="52" height="4"/><rect x="84" y="46" width="16" height="4"/><rect x="20" y="58" width="44" height="4"/><rect x="84" y="58" width="16" height="4"/><rect x="20" y="70" width="48" height="4"/><rect x="84" y="70" width="16" height="4"/></g><line x1="20" x2="100" y1="86" y2="86" stroke="#d6dde2" stroke-dasharray="3 2"/><text x="20" y="100" font-size="8" font-weight="700" fill="#1b2430">TOTAL</text><text x="100" y="100" font-size="8" font-weight="700" text-anchor="end" fill="#1b2430">$47.30</text></svg>';
   return '<svg class="rc" viewBox="0 0 120 150" role="img" aria-label="A blurry receipt"><defs><filter id="bl"><feGaussianBlur stdDeviation="2.4"/></filter></defs><rect x="10" y="4" width="100" height="142" rx="4" fill="#fbfaf7" stroke="#d6dde2"/><g filter="url(#bl)" fill="#9aa5b1"><rect x="26" y="16" width="68" height="7"/><rect x="36" y="28" width="48" height="5"/><rect x="20" y="46" width="52" height="4"/><rect x="84" y="46" width="16" height="4"/><rect x="20" y="58" width="44" height="4"/><rect x="20" y="96" width="30" height="6"/><rect x="74" y="96" width="26" height="6"/></g></svg>';
 }
 function openReceipt(from) {
-  ui.receipt = { rid: ui.rid, from, phase: 'pick' };
+  ui.receipt = { rid: ui.rid, from, phase: 'pick', date: receiptDate(ui.rid) };
   renderReceipt(); openSheet('receiptSheet');
 }
 function renderReceipt() {
@@ -689,16 +690,16 @@ function renderReceipt() {
   let body = '';
   if (rc.phase === 'pick') {
     body = '<p class="hintline">Pick a photo of your receipt from your camera roll (sample photos). We look for the restaurant name and a visit date.</p>' +
-      '<div class="samples"><button type="button" data-sample="good">' + receiptSvg(true, r) + 'Clear receipt</button><button type="button" data-sample="bad">' + receiptSvg(false) + 'Blurry receipt</button></div>' +
+      '<div class="samples"><button type="button" data-sample="good">' + receiptSvg(true, r, rc.date) + 'Clear receipt</button><button type="button" data-sample="bad">' + receiptSvg(false) + 'Blurry receipt</button></div>' +
       '<p class="hintline">A photo or note is never required to verify.</p>';
   } else if (rc.phase === 'checking') {
     body = '<div class="check">' + rc.preview + '<div class="spin"></div><span>Checking for the restaurant name and a visit date…</span></div>';
   } else if (rc.phase === 'ask') {
     body = '<div class="check">' + rc.preview + '<span>This prototype can\'t read text, so you decide what the check finds. Does it show <b>' + esc(r.name) + '</b> and a date?</span><div style="display:flex;gap:8px"><button class="tbtn" type="button" data-judge="1">Name and date clear</button><button class="tbtn ghost" type="button" data-judge="0">Not readable</button></div></div>';
   } else if (rc.phase === 'ok') {
-    body = '<div class="check ok">' + rc.preview + '<span class="res">✓ Receipt matched</span><span>' + esc(r.name) + ' · ' + fmt(daysAgo(3)) + '</span><button class="tbtn" type="button" data-receiptdone>' + (rc.from === 'review' ? 'Back to review' : 'Continue') + '</button></div>';
+    body = '<div class="check ok">' + rc.preview + '<span class="res">✓ Receipt matched</span><span>' + esc(r.name) + ' · ' + fmt(rc.date) + '</span><button class="tbtn" type="button" data-receiptdone>' + (rc.from === 'review' ? 'Back to review' : 'Continue') + '</button></div>';
   } else if (rc.phase === 'dup') {
-    body = '<div class="check bad">' + rc.preview + '<span class="res">Receipt already used</span><span>This receipt already verified your ' + fmt(daysAgo(3)) + ' review. Each visit can verify one review.</span><button class="tbtn ghost" type="button" data-close="receiptSheet">Close</button></div>';
+    body = '<div class="check bad">' + rc.preview + '<span class="res">Receipt already used</span><span>This receipt already verified your ' + fmt(rc.date) + ' review. Each visit can verify one review.</span><button class="tbtn ghost" type="button" data-close="receiptSheet">Close</button></div>';
   } else {
     body = '<div class="check bad">' + rc.preview + '<span class="res">Couldn\'t verify this receipt</span><span>The restaurant name or date isn\'t readable, so this visit stays unverified. You can still post a standard review.</span><div style="display:flex;gap:8px"><button class="tbtn" type="button" data-retry>Try another</button><button class="tbtn ghost" type="button" data-close="receiptSheet">Close</button></div></div>';
   }
@@ -710,10 +711,10 @@ function runCheck(good, instant) {
 }
 function finishCheck(good) {
   const rc = ui.receipt; if (!rc) return;
-  if (good && proofUsed(rc.rid, 'receipt', daysAgo(3))) rc.phase = 'dup';
+  if (good && proofUsed(rc.rid, 'receipt', rc.date)) rc.phase = 'dup';
   else if (good) {
-    rc.phase = 'ok'; S.verif[rc.rid] = { method: 'receipt', date: daysAgo(3) }; save();
-    if (ui.draft && rc.from === 'review') { ui.draft.proof = { method: 'receipt', date: daysAgo(3) }; ui.draft.date = daysAgo(3); renderReview(); }
+    rc.phase = 'ok'; S.verif[rc.rid] = { method: 'receipt', date: rc.date }; save();
+    if (ui.draft && rc.from === 'review') { ui.draft.proof = { method: 'receipt', date: rc.date }; ui.draft.date = rc.date; renderReview(); }
     render();
   } else rc.phase = 'bad';
   renderReceipt();
@@ -750,7 +751,7 @@ document.addEventListener('click', (e) => {
   if ('submit' in ds) return submitReview();
   if ('addnow' in ds) { ui.draft.showNudge = false; renderReview(); const t = !ui.draft.note.trim() ? $('#note') : $('#photosRow'); const sb = $('#reviewSheet .sb'); sb.scrollTop += t.getBoundingClientRect().top - sb.getBoundingClientRect().top - 60; if (t.id === 'note') t.focus({ preventScroll: true }); return; }
   if ('skip' in ds) return postReview();
-  if (ds.sample) { ui.receipt.preview = receiptSvg(ds.sample === 'good', RB[ui.receipt.rid]); return runCheck(ds.sample === 'good'); }
+  if (ds.sample) { ui.receipt.preview = receiptSvg(ds.sample === 'good', RB[ui.receipt.rid], ui.receipt.date); return runCheck(ds.sample === 'good'); }
   if (ds.judge) return runCheck(ds.judge === '1');
   if ('retry' in ds) { ui.receipt.phase = 'pick'; return renderReceipt(); }
   if ('receiptdone' in ds) {
