@@ -434,7 +434,7 @@ const TODAY = (() => { const d = new Date(); d.setHours(12, 0, 0, 0); return d; 
 const iso = (d) => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
 const daysAgo = (n) => iso(new Date(TODAY.getTime() - n * 864e5));
 const parse = (s) => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d, 12); };
-const fmt = (s) => parse(s).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+const fmt = (s) => !s ? '' : parse(s).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 
 const IC = {
   back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>',
@@ -487,6 +487,7 @@ const KEY = 'beli-vvr-v2';
 const fresh = () => ({ calendar: true, verif: {}, saved: {}, mine: [], used: [], drafts: {} });
 let S = fresh();
 try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(fresh(), JSON.parse(raw)); } catch (e) { /* storage blocked */ }
+(S.mine || []).forEach((m) => { if (m.verified && m.method && m.date && !(S.used || []).some((u) => u.rid === m.rid && u.method === m.method && u.date === m.date)) (S.used = S.used || []).push({ rid: m.rid, method: m.method, date: m.date }); });
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* ignore */ } };
 const ui = { screen: 'home', rid: null, query: '', sheet: null, draft: null, receipt: null };
 const verifiedCount = () => SEED_VERIFIED + S.mine.filter((m) => m.verified).length;
@@ -532,7 +533,9 @@ function renderHome() {
 function verifyCard(r) {
   const v = S.verif[r.id]; const c = calFor(r); const reviewed = v && v.used;
   const calUsed = c && proofUsed(r.id, 'calendar', c.date) && !(v && !reviewed);
-  const calRow = S.calendar ? (calUsed
+  const calActive = v && !reviewed && v.method === 'calendar';
+  const calRow = !S.calendar && calActive ? '<button class="opt cal active" type="button" disabled><span class="oi">' + IC.cal + '</span><span><b>Google Calendar</b><small>Matched: ' + fmt(v.date) + '</small></span><span class="act">Active</span></button>'
+    : S.calendar ? (calUsed
     ? '<button class="opt" type="button" disabled><span class="oi">' + IC.cal + '</span><span><b>Google Calendar</b><small>Already used for your ' + fmt(c.date) + ' review</small></span></button>'
     : c
     ? '<button class="opt cal' + (v && !reviewed && v.method === 'calendar' ? ' active' : '') + '" type="button" data-cal' + (v && !reviewed ? ' disabled' : '') + '><span class="oi">' + IC.cal + '</span><span><b>Google Calendar</b><small>' + (v && !reviewed && v.method === 'calendar' ? 'Matched: ' + fmt(c.date) + ', ' + c.time : 'Auto-detected &amp; matched') + '</small></span><span class="act">' + (v && !reviewed && v.method === 'calendar' ? 'Active' : 'Verify') + '</span></button>'
@@ -660,7 +663,7 @@ function postReview() {
   const d = ui.draft; if (!d) return;
   if (!d.rating) { d.needRating = true; d.showNudge = false; d.nudged = false; renderReview(); $('#reviewSheet .sb').scrollTop = 0; toast('Pick how it was first'); return; }
   const before = verifiedCount();
-  S.mine.unshift({ rid: d.rid, rating: d.rating, note: d.note.trim(), verified: !!d.proof, method: d.proof ? d.proof.method : null, date: d.proof ? d.proof.date : d.date,
+  S.mine.unshift({ rid: d.rid, rating: d.rating, note: d.note.trim(), verified: !!d.proof, method: d.proof ? d.proof.method : null, date: d.proof ? d.proof.date : (d.date || iso(TODAY)),
     friends: d.friends.slice(), dishes: d.dishes.trim(), photos: d.photos.slice(), stealth: d.stealth });
   if (d.proof) { (S.used = S.used || []).push({ rid: d.rid, method: d.proof.method, date: d.proof.date }); if (S.verif[d.rid]) S.verif[d.rid].used = true; }
   if (S.drafts) delete S.drafts[d.rid]; save(); closeSheet('reviewSheet'); ui.draft = null; render();
@@ -682,7 +685,7 @@ function receiptSvg(good, r, date) {
   return '<svg class="rc" viewBox="0 0 120 150" role="img" aria-label="A blurry receipt"><defs><filter id="bl"><feGaussianBlur stdDeviation="2.4"/></filter></defs><rect x="10" y="4" width="100" height="142" rx="4" fill="#fbfaf7" stroke="#d6dde2"/><g filter="url(#bl)" fill="#9aa5b1"><rect x="26" y="16" width="68" height="7"/><rect x="36" y="28" width="48" height="5"/><rect x="20" y="46" width="52" height="4"/><rect x="84" y="46" width="16" height="4"/><rect x="20" y="58" width="44" height="4"/><rect x="20" y="96" width="30" height="6"/><rect x="74" y="96" width="26" height="6"/></g></svg>';
 }
 function openReceipt(from) {
-  ui.receipt = { rid: ui.rid, from, phase: 'pick', date: receiptDate(ui.rid) };
+  ui.receipt = { rid: ui.rid, from, phase: 'pick', date: receiptDate(ui.rid), token: Date.now() + Math.random() };
   renderReceipt(); openSheet('receiptSheet');
 }
 function renderReceipt() {
@@ -706,8 +709,8 @@ function renderReceipt() {
   $('#receiptSheet').innerHTML = '<div class="sh"><div><h3>Upload a receipt</h3><small>' + esc(r.name) + '</small></div><button type="button" data-close="receiptSheet" aria-label="Close">×</button></div><div class="sb">' + body + '</div>';
 }
 function runCheck(good, instant) {
-  const rc = ui.receipt; rc.phase = 'checking'; renderReceipt();
-  setTimeout(() => finishCheck(good), instant ? 0 : (reduced ? 200 : 500));
+  const rc = ui.receipt; rc.phase = 'checking'; renderReceipt(); const token = rc.token;
+  setTimeout(() => { if (ui.receipt && ui.receipt.token === token) finishCheck(good); }, instant ? 0 : (reduced ? 200 : 500));
 }
 function finishCheck(good) {
   const rc = ui.receipt; if (!rc) return;
